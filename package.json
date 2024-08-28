@@ -1,0 +1,55 @@
+{
+  "name": "@stianlarsen/react-light-beam",
+  "version": "1.0.0",
+  "description": "A customizable React component that creates a light beam effect using conic gradients. Supports dark mode and various customization options.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist && tsc"
+  },
+  "files": [
+    "!src/**",
+    "dist",
+    "types"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stianalars1/react-light-beam.git"
+  },
+  "keywords": [
+    "react",
+    "light beam",
+    "conic gradient",
+    "dark mode",
+    "framer-motion",
+    "animation"
+  ],
+  "author": "Stian Larsen <stian.larsen@mac.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stianalars1/react-light-beam/issues"
+  },
+  "homepage": "https://github.com/stianalars1/react-light-beam#readme",
+  "peerDependencies": {
+    "framer-motion": "^11.3.30",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "framer-motion": "^11.3.30"
+  },
+  "dependencies": {
+    "framer-motion": "^11.3.30",
+    "react": "^18",
+    "react-dom": "^18"
+  }
+}
