@@ -19,7 +19,7 @@ yarn add @stianlarsen/react-light-beam
 ## Usage
 
 ```jsx
-import LightBeam from "@stianlarsen/react-light-beam";
+import { LightBeam } from "@stianlarsen/react-light-beam";
 import "your-css-file.css"; // Include the necessary styles
 
 const App = () => {
