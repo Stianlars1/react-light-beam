@@ -45,7 +45,7 @@
   "devDependencies": {
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "framer-motion": "^11.3.30"
+    "typescript": "^5.5.4"
   },
   "dependencies": {
     "framer-motion": "^11.3.30",
