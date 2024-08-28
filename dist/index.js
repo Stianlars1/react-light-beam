@@ -75,4 +75,3 @@ const LightBeam = ({ className, colorLightmode = "rgba(0,0,0, 0.5)", colorDarkmo
         }, ref: elementRef, className: `Conic_conic__HBaxC ${className}` }));
 };
 exports.LightBeam = LightBeam;
-exports.default = exports.LightBeam;
