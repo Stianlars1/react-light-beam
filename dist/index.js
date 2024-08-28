@@ -23,18 +23,23 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LightBeam = void 0;
 const framer_motion_1 = require("framer-motion");
 const react_1 = __importStar(require("react"));
+const lightBeam_module_css_1 = __importDefault(require("./css/lightBeam.module.css"));
 const useDarkmode_1 = require("./hooks/useDarkmode");
-const LightBeam = ({ className, colorLightmode = "rgba(0,0,0, 0.5)", colorDarkmode = "rgba(255, 255, 255, 0.5)", fullWidth = 1.0, // Default to full width
- }) => {
+const LightBeam = ({ className, colorLightmode = "rgba(0,0,0, 0.5)", colorDarkmode = "rgba(255, 255, 255, 0.5)", maskLightByProgress = false, fullWidth = 1.0, // Default to full width
+invert = false, id = undefined, }) => {
     const elementRef = (0, react_1.useRef)(null);
     const bodyRef = (0, react_1.useRef)(document.body);
     const inViewProgress = (0, framer_motion_1.useMotionValue)(0);
     const opacity = (0, framer_motion_1.useMotionValue)(0.839322);
     const { isDarkmode } = (0, useDarkmode_1.useIsDarkmode)();
+    const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
     (0, react_1.useEffect)(() => {
         const handleScroll = () => {
             if (elementRef.current) {
@@ -43,8 +48,11 @@ const LightBeam = ({ className, colorLightmode = "rgba(0,0,0, 0.5)", colorDarkmo
                 // Invert the fullWidth value: 1 becomes 0, and 0 becomes 1
                 const adjustedFullWidth = 1 - fullWidth;
                 // Calculate progress
-                const progress = 1 - Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight));
-                console.log("progress: ", progress);
+                const progress = invert
+                    ? 0 +
+                        Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight))
+                    : 1 -
+                        Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight));
                 // Update motion values
                 inViewProgress.set(progress);
                 opacity.set(0.839322 + (1 - 0.839322) * progress);
@@ -61,17 +69,21 @@ const LightBeam = ({ className, colorLightmode = "rgba(0,0,0, 0.5)", colorDarkmo
         };
     }, [inViewProgress, opacity]);
     const backgroundPosition = (0, framer_motion_1.useTransform)(inViewProgress, [0, 1], [
-        "conic-gradient(from 90deg at 90% 0%, var(--colorTop), transparent 180deg) 0% 0% / 50% 150% no-repeat, conic-gradient(from 270deg at 10% 0%, transparent 180deg, var(--colorTop)) 100% 0% / 50% 100% no-repeat",
-        "conic-gradient(from 90deg at 0% 0%, var(--colorTop), transparent 180deg) 0% 0% / 50% 100% no-repeat, conic-gradient(from 270deg at 100% 0%, transparent 180deg, var(--colorTop)) 100% 0% / 50% 100% no-repeat",
+        `conic-gradient(from 90deg at 90% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 150% no-repeat, conic-gradient(from 270deg at 10% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,
+        `conic-gradient(from 90deg at 0% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 100% no-repeat, conic-gradient(from 270deg at 100% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,
     ]);
+    const maskImageOpacity = (0, framer_motion_1.useTransform)(inViewProgress, [0, 1], [
+        `linear-gradient(to bottom, ${chosenColor} 0%, transparent 50%)`,
+        `linear-gradient(to bottom, ${chosenColor} 0%, transparent 95%)`,
+    ]);
+    const maskImage = maskLightByProgress
+        ? maskImageOpacity
+        : `linear-gradient(to bottom, ${chosenColor} 25%, transparent 95%)`;
     return (react_1.default.createElement(framer_motion_1.motion.div, { style: {
-            "--colorTop": `${isDarkmode ? colorDarkmode : colorLightmode}`,
             background: backgroundPosition,
             opacity: opacity,
-            height: "100%",
-            transition: "background 0.5s ease, opacity 0.5s ease",
-            zIndex: -1,
-            maskImage: `linear-gradient(to bottom, background 0%,  transparent 98%)`,
-        }, ref: elementRef, className: `Conic_conic__HBaxC ${className}` }));
+            maskImage: maskImage,
+            WebkitMaskImage: maskImage,
+        }, ref: elementRef, id: id, className: `lightBeam ${className} ${lightBeam_module_css_1.default.react__light__beam}` }));
 };
 exports.LightBeam = LightBeam;

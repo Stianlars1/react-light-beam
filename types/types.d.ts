@@ -3,4 +3,7 @@ export type LightBeamProps = {
   fullWidth?: number;
   colorLightmode?: string;
   colorDarkmode?: string;
+  maskLightByProgress?: boolean;
+  invert?: boolean;
+  id?: string;
 };

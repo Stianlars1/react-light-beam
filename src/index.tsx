@@ -2,20 +2,23 @@
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import React, { useEffect, useRef } from "react";
 import { LightBeamProps } from "../types/types";
+import styles from "./css/lightBeam.module.css";
 import { useIsDarkmode } from "./hooks/useDarkmode";
-
 export const LightBeam = ({
   className,
   colorLightmode = "rgba(0,0,0, 0.5)",
   colorDarkmode = "rgba(255, 255, 255, 0.5)",
-
+  maskLightByProgress = false,
   fullWidth = 1.0, // Default to full width
+  invert = false,
+  id = undefined,
 }: LightBeamProps) => {
   const elementRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLElement>(document.body);
   const inViewProgress = useMotionValue(0);
   const opacity = useMotionValue(0.839322);
   const { isDarkmode } = useIsDarkmode();
+  const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,10 +30,11 @@ export const LightBeam = ({
         const adjustedFullWidth = 1 - fullWidth;
 
         // Calculate progress
-        const progress =
-          1 - Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight));
-
-        console.log("progress: ", progress);
+        const progress = invert
+          ? 0 +
+            Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight))
+          : 1 -
+            Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight));
 
         // Update motion values
         inViewProgress.set(progress);
@@ -55,26 +59,36 @@ export const LightBeam = ({
     inViewProgress,
     [0, 1],
     [
-      "conic-gradient(from 90deg at 90% 0%, var(--colorTop), transparent 180deg) 0% 0% / 50% 150% no-repeat, conic-gradient(from 270deg at 10% 0%, transparent 180deg, var(--colorTop)) 100% 0% / 50% 100% no-repeat",
-      "conic-gradient(from 90deg at 0% 0%, var(--colorTop), transparent 180deg) 0% 0% / 50% 100% no-repeat, conic-gradient(from 270deg at 100% 0%, transparent 180deg, var(--colorTop)) 100% 0% / 50% 100% no-repeat",
+      `conic-gradient(from 90deg at 90% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 150% no-repeat, conic-gradient(from 270deg at 10% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,
+      `conic-gradient(from 90deg at 0% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 100% no-repeat, conic-gradient(from 270deg at 100% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,
     ]
   );
+  const maskImageOpacity = useTransform(
+    inViewProgress,
+    [0, 1],
+    [
+      `linear-gradient(to bottom, ${chosenColor} 0%, transparent 50%)`,
+      `linear-gradient(to bottom, ${chosenColor} 0%, transparent 95%)`,
+    ]
+  );
+
+  const maskImage = maskLightByProgress
+    ? maskImageOpacity
+    : `linear-gradient(to bottom, ${chosenColor} 25%, transparent 95%)`;
 
   return (
     <motion.div
       style={
         {
-          "--colorTop": `${isDarkmode ? colorDarkmode : colorLightmode}`,
           background: backgroundPosition,
           opacity: opacity,
-          height: "100%",
-          transition: "background 0.5s ease, opacity 0.5s ease",
-          zIndex: -1,
-          maskImage: `linear-gradient(to bottom, background 0%,  transparent 98%)`,
+          maskImage: maskImage,
+          WebkitMaskImage: maskImage,
         } as any
       }
       ref={elementRef}
-      className={`Conic_conic__HBaxC ${className}`}
+      id={id}
+      className={`lightBeam ${className} ${styles.react__light__beam}`}
     />
   );
 };
