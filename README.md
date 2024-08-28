@@ -2,8 +2,6 @@
 
 [![npm version](https://badge.fury.io/js/%40stianlarsen%2Freact-light-beam.svg)](https://badge.fury.io/js/%40stianlarsen%2Freact-light-beam)
 
-![Preview / example image](https://github.com/Stianlars1/react-light-beam/blob/5422cdc60ae7ab6b52d644d452646bec7212f76f/lightBeam.png)
-
 A customizable React component that creates a light beam effect using conic gradients. The component is fully responsive and supports both light and dark modes. Ideal for adding dynamic and engaging visual elements to your web applications.
 
 ## Preview
