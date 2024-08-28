@@ -35,39 +35,45 @@ const useDarkmode_1 = require("./hooks/useDarkmode");
 const LightBeam = ({ className, colorLightmode = "rgba(0,0,0, 0.5)", colorDarkmode = "rgba(255, 255, 255, 0.5)", maskLightByProgress = false, fullWidth = 1.0, // Default to full width
 invert = false, id = undefined, }) => {
     const elementRef = (0, react_1.useRef)(null);
-    const bodyRef = (0, react_1.useRef)(document.body);
+    const [bodyElement, setBodyElement] = (0, react_1.useState)(null); // State to hold the body element
     const inViewProgress = (0, framer_motion_1.useMotionValue)(0);
     const opacity = (0, framer_motion_1.useMotionValue)(0.839322);
     const { isDarkmode } = (0, useDarkmode_1.useIsDarkmode)();
     const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
     (0, react_1.useEffect)(() => {
-        const handleScroll = () => {
-            if (elementRef.current) {
-                const rect = elementRef.current.getBoundingClientRect();
-                const windowHeight = window.innerHeight;
-                // Invert the fullWidth value: 1 becomes 0, and 0 becomes 1
-                const adjustedFullWidth = 1 - fullWidth;
-                // Calculate progress
-                const progress = invert
-                    ? 0 +
-                        Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight))
-                    : 1 -
-                        Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight));
-                // Update motion values
-                inViewProgress.set(progress);
-                opacity.set(0.839322 + (1 - 0.839322) * progress);
-            }
-        };
-        // Attach scroll and resize event listeners
-        bodyRef.current.addEventListener("scroll", handleScroll);
-        bodyRef.current.addEventListener("resize", handleScroll);
-        // Initial call to handleScroll to set initial state
-        handleScroll();
-        return () => {
-            bodyRef.current.removeEventListener("scroll", handleScroll);
-            bodyRef.current.removeEventListener("resize", handleScroll);
-        };
-    }, [inViewProgress, opacity]);
+        // Set the body element after the component mounts
+        setBodyElement(document.body);
+    }, []);
+    (0, react_1.useEffect)(() => {
+        if (bodyElement) {
+            const handleScroll = () => {
+                if (elementRef.current) {
+                    const rect = elementRef.current.getBoundingClientRect();
+                    const windowHeight = window.innerHeight;
+                    // Invert the fullWidth value: 1 becomes 0, and 0 becomes 1
+                    const adjustedFullWidth = 1 - fullWidth;
+                    // Calculate progress
+                    const progress = invert
+                        ? 0 +
+                            Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight))
+                        : 1 -
+                            Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight));
+                    // Update motion values
+                    inViewProgress.set(progress);
+                    opacity.set(0.839322 + (1 - 0.839322) * progress);
+                }
+            };
+            // Attach scroll and resize event listeners
+            bodyElement.addEventListener("scroll", handleScroll);
+            window.addEventListener("resize", handleScroll);
+            // Initial call to handleScroll to set initial state
+            handleScroll();
+            return () => {
+                bodyElement.removeEventListener("scroll", handleScroll);
+                window.removeEventListener("resize", handleScroll);
+            };
+        }
+    }, [bodyElement, inViewProgress, opacity]);
     const backgroundPosition = (0, framer_motion_1.useTransform)(inViewProgress, [0, 1], [
         `conic-gradient(from 90deg at 90% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 150% no-repeat, conic-gradient(from 270deg at 10% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,
         `conic-gradient(from 90deg at 0% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 100% no-repeat, conic-gradient(from 270deg at 100% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,

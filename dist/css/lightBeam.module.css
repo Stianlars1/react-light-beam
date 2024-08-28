@@ -3,4 +3,8 @@
   width: 100vw;
   transition: all 0.5s ease;
   will-change: auto;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  pointer-events: none;
 }/*# sourceMappingURL=lightBeam.module.css.map */

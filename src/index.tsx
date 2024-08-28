@@ -1,9 +1,10 @@
 "use client";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { LightBeamProps } from "../types/types";
 import styles from "./css/lightBeam.module.css";
 import { useIsDarkmode } from "./hooks/useDarkmode";
+
 export const LightBeam = ({
   className,
   colorLightmode = "rgba(0,0,0, 0.5)",
@@ -14,46 +15,53 @@ export const LightBeam = ({
   id = undefined,
 }: LightBeamProps) => {
   const elementRef = useRef<HTMLDivElement>(null);
-  const bodyRef = useRef<HTMLElement>(document.body);
+  const [bodyElement, setBodyElement] = useState<HTMLElement | null>(null); // State to hold the body element
   const inViewProgress = useMotionValue(0);
   const opacity = useMotionValue(0.839322);
   const { isDarkmode } = useIsDarkmode();
   const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (elementRef.current) {
-        const rect = elementRef.current.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
+    // Set the body element after the component mounts
+    setBodyElement(document.body);
+  }, []);
 
-        // Invert the fullWidth value: 1 becomes 0, and 0 becomes 1
-        const adjustedFullWidth = 1 - fullWidth;
+  useEffect(() => {
+    if (bodyElement) {
+      const handleScroll = () => {
+        if (elementRef.current) {
+          const rect = elementRef.current.getBoundingClientRect();
+          const windowHeight = window.innerHeight;
 
-        // Calculate progress
-        const progress = invert
-          ? 0 +
-            Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight))
-          : 1 -
-            Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight));
+          // Invert the fullWidth value: 1 becomes 0, and 0 becomes 1
+          const adjustedFullWidth = 1 - fullWidth;
 
-        // Update motion values
-        inViewProgress.set(progress);
-        opacity.set(0.839322 + (1 - 0.839322) * progress);
-      }
-    };
+          // Calculate progress
+          const progress = invert
+            ? 0 +
+              Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight))
+            : 1 -
+              Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight));
 
-    // Attach scroll and resize event listeners
-    bodyRef.current.addEventListener("scroll", handleScroll);
-    bodyRef.current.addEventListener("resize", handleScroll);
+          // Update motion values
+          inViewProgress.set(progress);
+          opacity.set(0.839322 + (1 - 0.839322) * progress);
+        }
+      };
 
-    // Initial call to handleScroll to set initial state
-    handleScroll();
+      // Attach scroll and resize event listeners
+      bodyElement.addEventListener("scroll", handleScroll);
+      window.addEventListener("resize", handleScroll);
 
-    return () => {
-      bodyRef.current.removeEventListener("scroll", handleScroll);
-      bodyRef.current.removeEventListener("resize", handleScroll);
-    };
-  }, [inViewProgress, opacity]);
+      // Initial call to handleScroll to set initial state
+      handleScroll();
+
+      return () => {
+        bodyElement.removeEventListener("scroll", handleScroll);
+        window.removeEventListener("resize", handleScroll);
+      };
+    }
+  }, [bodyElement, inViewProgress, opacity]);
 
   const backgroundPosition = useTransform(
     inViewProgress,
@@ -78,14 +86,12 @@ export const LightBeam = ({
 
   return (
     <motion.div
-      style={
-        {
-          background: backgroundPosition,
-          opacity: opacity,
-          maskImage: maskImage,
-          WebkitMaskImage: maskImage,
-        } as any
-      }
+      style={{
+        background: backgroundPosition,
+        opacity: opacity,
+        maskImage: maskImage,
+        WebkitMaskImage: maskImage,
+      }}
       ref={elementRef}
       id={id}
       className={`lightBeam ${className} ${styles.react__light__beam}`}
