@@ -6,4 +6,5 @@ export type LightBeamProps = {
   maskLightByProgress?: boolean;
   invert?: boolean;
   id?: string;
+  onLoaded?: () => void;
 };

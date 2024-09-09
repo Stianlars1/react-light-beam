@@ -33,7 +33,7 @@ const react_1 = __importStar(require("react"));
 const lightBeam_module_css_1 = __importDefault(require("./css/lightBeam.module.css"));
 const useDarkmode_1 = require("./hooks/useDarkmode");
 const LightBeam = ({ className, colorLightmode = "rgba(0,0,0, 0.5)", colorDarkmode = "rgba(255, 255, 255, 0.5)", maskLightByProgress = false, fullWidth = 1.0, // Default to full width
-invert = false, id = undefined, }) => {
+invert = false, id = undefined, onLoaded = undefined, }) => {
     const elementRef = (0, react_1.useRef)(null);
     const [bodyElement, setBodyElement] = (0, react_1.useState)(null); // State to hold the body element
     const inViewProgress = (0, framer_motion_1.useMotionValue)(0);
@@ -43,6 +43,7 @@ invert = false, id = undefined, }) => {
     (0, react_1.useEffect)(() => {
         // Set the body element after the component mounts
         setBodyElement(document.body);
+        onLoaded && onLoaded();
     }, []);
     (0, react_1.useEffect)(() => {
         if (bodyElement) {

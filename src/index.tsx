@@ -13,6 +13,7 @@ export const LightBeam = ({
   fullWidth = 1.0, // Default to full width
   invert = false,
   id = undefined,
+  onLoaded = undefined,
 }: LightBeamProps) => {
   const elementRef = useRef<HTMLDivElement>(null);
   const [bodyElement, setBodyElement] = useState<HTMLElement | null>(null); // State to hold the body element
@@ -24,6 +25,7 @@ export const LightBeam = ({
   useEffect(() => {
     // Set the body element after the component mounts
     setBodyElement(document.body);
+    onLoaded && onLoaded();
   }, []);
 
   useEffect(() => {
