@@ -1,1 +1,1 @@
-{"version":3,"sources":["lightBeam.module.scss","lightBeam.module.css"],"names":[],"mappings":"AAAA;EACE,aAAA;EACA,YAAA;EACA,yBAAA;EACA,iBAAA;EACA,yBAAA;KAAA,sBAAA;UAAA,iBAAA;EACA,oBAAA;ACCF","file":"lightBeam.module.css"}
+{"version":3,"sources":["lightBeam.module.scss","lightBeam.module.css"],"names":[],"mappings":"AAAA;EACE,aAAA;EACA,YAAA;EACA,0BAAA;EACA,gBAAA;EACA,yBAAA;KAAA,sBAAA;UAAA,iBAAA;EACA,oBAAA;EACA,kCAAA;ACCF","file":"lightBeam.module.css"}

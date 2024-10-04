@@ -29,7 +29,7 @@ export const LightBeam = ({
   }, []);
 
   useEffect(() => {
-    if (bodyElement) {
+    if (bodyElement && typeof window !== "undefined") {
       const handleScroll = () => {
         if (elementRef.current) {
           const rect = elementRef.current.getBoundingClientRect();
@@ -52,15 +52,17 @@ export const LightBeam = ({
       };
 
       // Attach scroll and resize event listeners
-      bodyElement.addEventListener("scroll", handleScroll);
-      window.addEventListener("resize", handleScroll);
+      const handleScrollThrottled = throttle(handleScroll); // Approx 60fps
+
+      bodyElement.addEventListener("scroll", handleScrollThrottled);
+      window.addEventListener("resize", handleScrollThrottled);
 
       // Initial call to handleScroll to set initial state
       handleScroll();
 
       return () => {
-        bodyElement.removeEventListener("scroll", handleScroll);
-        window.removeEventListener("resize", handleScroll);
+        bodyElement.removeEventListener("scroll", handleScrollThrottled);
+        window.removeEventListener("resize", handleScrollThrottled);
       };
     }
   }, [bodyElement, inViewProgress, opacity]);
@@ -93,10 +95,24 @@ export const LightBeam = ({
         opacity: opacity,
         maskImage: maskImage,
         WebkitMaskImage: maskImage,
+        willChange: "background, opacity",
       }}
       ref={elementRef}
       id={id}
       className={`lightBeam ${className} ${styles.react__light__beam}`}
     />
   );
+};
+
+const throttle = (func: Function) => {
+  let ticking = false;
+  return function (this: any, ...args: any[]) {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        func.apply(this, args);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  };
 };

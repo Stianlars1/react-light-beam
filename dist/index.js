@@ -46,7 +46,7 @@ invert = false, id = undefined, onLoaded = undefined, }) => {
         onLoaded && onLoaded();
     }, []);
     (0, react_1.useEffect)(() => {
-        if (bodyElement) {
+        if (bodyElement && typeof window !== "undefined") {
             const handleScroll = () => {
                 if (elementRef.current) {
                     const rect = elementRef.current.getBoundingClientRect();
@@ -65,13 +65,14 @@ invert = false, id = undefined, onLoaded = undefined, }) => {
                 }
             };
             // Attach scroll and resize event listeners
-            bodyElement.addEventListener("scroll", handleScroll);
-            window.addEventListener("resize", handleScroll);
+            const handleScrollThrottled = throttle(handleScroll); // Approx 60fps
+            bodyElement.addEventListener("scroll", handleScrollThrottled);
+            window.addEventListener("resize", handleScrollThrottled);
             // Initial call to handleScroll to set initial state
             handleScroll();
             return () => {
-                bodyElement.removeEventListener("scroll", handleScroll);
-                window.removeEventListener("resize", handleScroll);
+                bodyElement.removeEventListener("scroll", handleScrollThrottled);
+                window.removeEventListener("resize", handleScrollThrottled);
             };
         }
     }, [bodyElement, inViewProgress, opacity]);
@@ -91,6 +92,19 @@ invert = false, id = undefined, onLoaded = undefined, }) => {
             opacity: opacity,
             maskImage: maskImage,
             WebkitMaskImage: maskImage,
+            willChange: "background, opacity",
         }, ref: elementRef, id: id, className: `lightBeam ${className} ${lightBeam_module_css_1.default.react__light__beam}` }));
 };
 exports.LightBeam = LightBeam;
+const throttle = (func) => {
+    let ticking = false;
+    return function (...args) {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                func.apply(this, args);
+                ticking = false;
+            });
+            ticking = true;
+        }
+    };
+};
