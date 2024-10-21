@@ -6,5 +6,6 @@ export type LightBeamProps = {
   maskLightByProgress?: boolean;
   invert?: boolean;
   id?: string;
+  scrollElement?: EventTarget;
   onLoaded?: () => void;
 };

@@ -1,6 +1,6 @@
 "use client";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { LightBeamProps } from "../types/types";
 import styles from "./css/lightBeam.module.css";
 import { useIsDarkmode } from "./hooks/useDarkmode";
@@ -14,22 +14,20 @@ export const LightBeam = ({
   invert = false,
   id = undefined,
   onLoaded = undefined,
+  scrollElement, // Add this line
 }: LightBeamProps) => {
   const elementRef = useRef<HTMLDivElement>(null);
-  const [bodyElement, setBodyElement] = useState<HTMLElement | null>(null); // State to hold the body element
   const inViewProgress = useMotionValue(0);
   const opacity = useMotionValue(0.839322);
   const { isDarkmode } = useIsDarkmode();
   const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
 
   useEffect(() => {
-    // Set the body element after the component mounts
-    setBodyElement(document.body);
     onLoaded && onLoaded();
   }, []);
 
   useEffect(() => {
-    if (bodyElement && typeof window !== "undefined") {
+    if (typeof window !== "undefined") {
       const handleScroll = () => {
         if (elementRef.current) {
           const rect = elementRef.current.getBoundingClientRect();
@@ -51,21 +49,22 @@ export const LightBeam = ({
         }
       };
 
-      // Attach scroll and resize event listeners
       const handleScrollThrottled = throttle(handleScroll); // Approx 60fps
 
-      bodyElement.addEventListener("scroll", handleScrollThrottled);
+      const target = scrollElement || window;
+
+      target.addEventListener("scroll", handleScrollThrottled);
       window.addEventListener("resize", handleScrollThrottled);
 
       // Initial call to handleScroll to set initial state
       handleScroll();
 
       return () => {
-        bodyElement.removeEventListener("scroll", handleScrollThrottled);
+        target.removeEventListener("scroll", handleScrollThrottled);
         window.removeEventListener("resize", handleScrollThrottled);
       };
     }
-  }, [bodyElement, inViewProgress, opacity]);
+  }, [inViewProgress, opacity, scrollElement]);
 
   const backgroundPosition = useTransform(
     inViewProgress,

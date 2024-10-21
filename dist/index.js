@@ -33,20 +33,18 @@ const react_1 = __importStar(require("react"));
 const lightBeam_module_css_1 = __importDefault(require("./css/lightBeam.module.css"));
 const useDarkmode_1 = require("./hooks/useDarkmode");
 const LightBeam = ({ className, colorLightmode = "rgba(0,0,0, 0.5)", colorDarkmode = "rgba(255, 255, 255, 0.5)", maskLightByProgress = false, fullWidth = 1.0, // Default to full width
-invert = false, id = undefined, onLoaded = undefined, }) => {
+invert = false, id = undefined, onLoaded = undefined, scrollElement, // Add this line
+ }) => {
     const elementRef = (0, react_1.useRef)(null);
-    const [bodyElement, setBodyElement] = (0, react_1.useState)(null); // State to hold the body element
     const inViewProgress = (0, framer_motion_1.useMotionValue)(0);
     const opacity = (0, framer_motion_1.useMotionValue)(0.839322);
     const { isDarkmode } = (0, useDarkmode_1.useIsDarkmode)();
     const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
     (0, react_1.useEffect)(() => {
-        // Set the body element after the component mounts
-        setBodyElement(document.body);
         onLoaded && onLoaded();
     }, []);
     (0, react_1.useEffect)(() => {
-        if (bodyElement && typeof window !== "undefined") {
+        if (typeof window !== "undefined") {
             const handleScroll = () => {
                 if (elementRef.current) {
                     const rect = elementRef.current.getBoundingClientRect();
@@ -64,18 +62,18 @@ invert = false, id = undefined, onLoaded = undefined, }) => {
                     opacity.set(0.839322 + (1 - 0.839322) * progress);
                 }
             };
-            // Attach scroll and resize event listeners
             const handleScrollThrottled = throttle(handleScroll); // Approx 60fps
-            bodyElement.addEventListener("scroll", handleScrollThrottled);
+            const target = scrollElement || window;
+            target.addEventListener("scroll", handleScrollThrottled);
             window.addEventListener("resize", handleScrollThrottled);
             // Initial call to handleScroll to set initial state
             handleScroll();
             return () => {
-                bodyElement.removeEventListener("scroll", handleScrollThrottled);
+                target.removeEventListener("scroll", handleScrollThrottled);
                 window.removeEventListener("resize", handleScrollThrottled);
             };
         }
-    }, [bodyElement, inViewProgress, opacity]);
+    }, [inViewProgress, opacity, scrollElement]);
     const backgroundPosition = (0, framer_motion_1.useTransform)(inViewProgress, [0, 1], [
         `conic-gradient(from 90deg at 90% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 150% no-repeat, conic-gradient(from 270deg at 10% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,
         `conic-gradient(from 90deg at 0% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 100% no-repeat, conic-gradient(from 270deg at 100% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,

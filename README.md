@@ -1,5 +1,9 @@
 # @stianlarsen/react-light-beam
 
+## 🚀 New Feature Alert!
+
+We've added a new prop: `scrollElement`. This allows you to specify which element should have the scroll listener attached, giving you greater flexibility in using the LightBeam component!
+
 [![npm version](https://badge.fury.io/js/%40stianlarsen%2Freact-light-beam.svg)](https://badge.fury.io/js/%40stianlarsen%2Freact-light-beam)
 
 A customizable React component that creates a light beam effect using conic gradients. The component is fully responsive and supports both light and dark modes. Ideal for adding dynamic and engaging visual elements to your web applications.
@@ -39,6 +43,7 @@ const App = () => {
         fullWidth={0.8}
         maskLightByProgress={true}
         invert={false}
+        scrollElement={window} // New prop to specify scroll element
       />
       <YourContentHere />
     </div>
@@ -50,16 +55,17 @@ export default App;
 
 ### Props
 
-| Prop Name             | Type                      | Default Value              | Description                                                                                                                                                                                                                                                                                                                                  |
-| --------------------- | ------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`                  | `string`                  | `undefined`                | Optional string representing a unique ID for the LightBeam container.                                                                                                                                                                                                                                                                        |
-| `className`           | `string`                  | `undefined`                | Optional string representing custom classes to be added to the LightBeam container.                                                                                                                                                                                                                                                          |
-| `colorLightmode`      | `string`                  | `rgba(0,0,0, 0.5)`         | Optional string representing the color of the light beam in light mode.                                                                                                                                                                                                                                                                      |
-| `colorDarkmode`       | `string`                  | `rgba(255, 255, 255, 0.5)` | Optional string representing the color of the light beam in dark mode.                                                                                                                                                                                                                                                                       |
-| `fullWidth`           | `number`                  | `1.0`                      | Optional number between `0` and `1` representing the maximum width the light beam can reach.                                                                                                                                                                                                                                                 |
-| `maskLightByProgress` | `boolean`                 | `false`                    | If `true`, the `mask-image`'s linear gradient will start with the chosen color at 0% and the transparent part starting at 50%. As the user scrolls, it will dynamically change to have the transparent part at 95%, reducing the glow effect. If `false`, it will default to `linear-gradient(to bottom, chosenColor 25%, transparent 95%)`. |
-| `invert`              | `boolean`                 | `false`                    | Optional boolean to invert the scroll progress calculation.                                                                                                                                                                                                                                                                                  |
-| `onLoaded`            | `undefined or () => void` | `undefined`                | Optional function to run when the component has mounted                                                                                                                                                                                                                                                                                      |
+| Prop Name             | Type                         | Default Value              | Description                                                                                                                                                                                                                                                                                                                                  |
+| --------------------- | ---------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                  | `string`                     | `undefined`                | Optional string representing a unique ID for the LightBeam container.                                                                                                                                                                                                                                                                        |
+| `className`           | `string`                     | `undefined`                | Optional string representing custom classes to be added to the LightBeam container.                                                                                                                                                                                                                                                          |
+| `colorLightmode`      | `string`                     | `rgba(0,0,0, 0.5)`         | Optional string representing the color of the light beam in light mode.                                                                                                                                                                                                                                                                      |
+| `colorDarkmode`       | `string`                     | `rgba(255, 255, 255, 0.5)` | Optional string representing the color of the light beam in dark mode.                                                                                                                                                                                                                                                                       |
+| `fullWidth`           | `number`                     | `1.0`                      | Optional number between `0` and `1` representing the maximum width the light beam can reach.                                                                                                                                                                                                                                                 |
+| `maskLightByProgress` | `boolean`                    | `false`                    | If `true`, the `mask-image`'s linear gradient will start with the chosen color at 0% and the transparent part starting at 50%. As the user scrolls, it will dynamically change to have the transparent part at 95%, reducing the glow effect. If `false`, it will default to `linear-gradient(to bottom, chosenColor 25%, transparent 95%)`. |
+| `invert`              | `boolean`                    | `false`                    | Optional boolean to invert the scroll progress calculation.                                                                                                                                                                                                                                                                                  |
+| `scrollElement`       | `EventTarget` or `undefined` | `window`                   | Optional prop for which element to attach the scroll listener to. This could be the `window`, `document.body`, or any other scrollable element.                                                                                                                                                                                              |
+| `onLoaded`            | `undefined or () => void`    | `undefined`                | Optional function to run when the component has mounted                                                                                                                                                                                                                                                                                      |
 
 ### Default Configuration
 
@@ -121,6 +127,7 @@ The component automatically adjusts between light and dark modes based on the us
   fullWidth={0.5}
   maskLightByProgress={true}
   invert={true}
+  scrollElement={document.body} // Example usage of the new scrollElement prop
 />
 ```
 
