@@ -9,7 +9,6 @@
     "build": "rm -rf dist && tsc && shx mkdir -p dist/css/  && shx cp src/css/lightBeam.module.css dist/css/"
   },
   "files": [
-    "!src/**",
     "dist",
     "types"
   ],
