@@ -13,5 +13,5 @@ node_modules/
 # configuration files
 # tsconfig.json
 .npmignore
-.npmrc
+.idea/
 
