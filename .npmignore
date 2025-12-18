@@ -1,0 +1,19 @@
+# Source files
+src/
+
+# Config files
+tsconfig.json
+tsup.config.ts
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+
+# Other
+node_modules/
+*.log
+*.tsbuildinfo
+*.tgz
+*.png
+.DS_Store

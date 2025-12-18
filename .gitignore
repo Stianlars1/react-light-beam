@@ -1,18 +1,22 @@
-# Source files
-# src/
-
-# TypeScript files
-# **/*.ts
-# **/*.tsx
-
-# Other unnecessary files
+# Dependencies
 node_modules/
+
+# Build output
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
 *.log
 *.tsbuildinfo
 
-# configuration files
-# tsconfig.json
-.npmignore
-.idea/
-**/*.tgz
-
+# Package archives
+*.tgz

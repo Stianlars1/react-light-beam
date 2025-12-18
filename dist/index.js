@@ -1,108 +1,150 @@
 "use strict";
 "use client";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// src/index.tsx
+var index_exports = {};
+__export(index_exports, {
+  LightBeam: () => LightBeam,
+  useIsDarkmode: () => useIsDarkmode
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.LightBeam = void 0;
-const framer_motion_1 = require("framer-motion");
-const react_1 = __importStar(require("react"));
-const lightBeam_module_css_1 = __importDefault(require("./css/lightBeam.module.css"));
-const useDarkmode_1 = require("./hooks/useDarkmode");
-const LightBeam = ({ className, colorLightmode = "rgba(0,0,0, 0.5)", colorDarkmode = "rgba(255, 255, 255, 0.5)", maskLightByProgress = false, fullWidth = 1.0, // Default to full width
-invert = false, id = undefined, onLoaded = undefined, scrollElement, // Add this line
- }) => {
-    const elementRef = (0, react_1.useRef)(null);
-    const inViewProgress = (0, framer_motion_1.useMotionValue)(0);
-    const opacity = (0, framer_motion_1.useMotionValue)(0.839322);
-    const { isDarkmode } = (0, useDarkmode_1.useIsDarkmode)();
-    const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
-    (0, react_1.useEffect)(() => {
-        onLoaded && onLoaded();
-    }, []);
-    (0, react_1.useEffect)(() => {
-        if (typeof window !== "undefined") {
-            const handleScroll = () => {
-                if (elementRef.current) {
-                    const rect = elementRef.current.getBoundingClientRect();
-                    const windowHeight = window.innerHeight;
-                    // Invert the fullWidth value: 1 becomes 0, and 0 becomes 1
-                    const adjustedFullWidth = 1 - fullWidth;
-                    // Calculate progress
-                    const progress = invert
-                        ? 0 +
-                            Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight))
-                        : 1 -
-                            Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight));
-                    // Update motion values
-                    inViewProgress.set(progress);
-                    opacity.set(0.839322 + (1 - 0.839322) * progress);
-                }
-            };
-            const handleScrollThrottled = throttle(handleScroll); // Approx 60fps
-            const target = scrollElement || window;
-            target.addEventListener("scroll", handleScrollThrottled);
-            window.addEventListener("resize", handleScrollThrottled);
-            // Initial call to handleScroll to set initial state
-            handleScroll();
-            return () => {
-                target.removeEventListener("scroll", handleScrollThrottled);
-                window.removeEventListener("resize", handleScrollThrottled);
-            };
-        }
-    }, [inViewProgress, opacity, scrollElement]);
-    const backgroundPosition = (0, framer_motion_1.useTransform)(inViewProgress, [0, 1], [
-        `conic-gradient(from 90deg at 90% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 150% no-repeat, conic-gradient(from 270deg at 10% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,
-        `conic-gradient(from 90deg at 0% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 100% no-repeat, conic-gradient(from 270deg at 100% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,
-    ]);
-    const maskImageOpacity = (0, framer_motion_1.useTransform)(inViewProgress, [0, 1], [
-        `linear-gradient(to bottom, ${chosenColor} 0%, transparent 50%)`,
-        `linear-gradient(to bottom, ${chosenColor} 0%, transparent 95%)`,
-    ]);
-    const maskImage = maskLightByProgress
-        ? maskImageOpacity
-        : `linear-gradient(to bottom, ${chosenColor} 25%, transparent 95%)`;
-    return (react_1.default.createElement(framer_motion_1.motion.div, { style: {
-            background: backgroundPosition,
-            opacity: opacity,
-            maskImage: maskImage,
-            WebkitMaskImage: maskImage,
-            willChange: "background, opacity",
-        }, ref: elementRef, id: id, className: `lightBeam ${className} ${lightBeam_module_css_1.default.react__light__beam}` }));
-};
-exports.LightBeam = LightBeam;
-const throttle = (func) => {
-    let ticking = false;
-    return function (...args) {
-        if (!ticking) {
-            requestAnimationFrame(() => {
-                func.apply(this, args);
-                ticking = false;
-            });
-            ticking = true;
-        }
+module.exports = __toCommonJS(index_exports);
+var import_framer_motion = require("framer-motion");
+var import_react2 = require("react");
+
+// src/hooks/useDarkmode.tsx
+var import_react = require("react");
+var useIsDarkmode = () => {
+  const [isDarkmode, setIsDarkmodeActive] = (0, import_react.useState)(false);
+  (0, import_react.useEffect)(() => {
+    const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => {
+      setIsDarkmodeActive(matchMedia.matches);
     };
+    setIsDarkmodeActive(matchMedia.matches);
+    matchMedia.addEventListener("change", handleChange);
+    return () => {
+      matchMedia.removeEventListener("change", handleChange);
+    };
+  }, []);
+  return { isDarkmode };
 };
+
+// src/index.tsx
+var import_jsx_runtime = require("react/jsx-runtime");
+var defaultStyles = {
+  height: "500px",
+  width: "100vw",
+  transition: "all 0.25s ease",
+  willChange: "background, opacity",
+  userSelect: "none",
+  pointerEvents: "none"
+};
+var LightBeam = ({
+  className,
+  colorLightmode = "rgba(0,0,0, 0.5)",
+  colorDarkmode = "rgba(255, 255, 255, 0.5)",
+  maskLightByProgress = false,
+  fullWidth = 1,
+  invert = false,
+  id,
+  onLoaded,
+  scrollElement
+}) => {
+  const elementRef = (0, import_react2.useRef)(null);
+  const inViewProgress = (0, import_framer_motion.useMotionValue)(0);
+  const opacity = (0, import_framer_motion.useMotionValue)(0.839322);
+  const { isDarkmode } = useIsDarkmode();
+  const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
+  (0, import_react2.useEffect)(() => {
+    onLoaded?.();
+  }, []);
+  (0, import_react2.useEffect)(() => {
+    if (typeof window === "undefined") return;
+    const handleScroll = () => {
+      if (elementRef.current) {
+        const rect = elementRef.current.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        const adjustedFullWidth = 1 - fullWidth;
+        const progress = invert ? 0 + Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight)) : 1 - Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight));
+        inViewProgress.set(progress);
+        opacity.set(0.839322 + (1 - 0.839322) * progress);
+      }
+    };
+    const handleScrollThrottled = throttle(handleScroll);
+    const target = scrollElement || window;
+    target.addEventListener("scroll", handleScrollThrottled);
+    window.addEventListener("resize", handleScrollThrottled);
+    handleScroll();
+    return () => {
+      target.removeEventListener("scroll", handleScrollThrottled);
+      window.removeEventListener("resize", handleScrollThrottled);
+    };
+  }, [inViewProgress, opacity, scrollElement, fullWidth, invert]);
+  const backgroundPosition = (0, import_framer_motion.useTransform)(
+    inViewProgress,
+    [0, 1],
+    [
+      `conic-gradient(from 90deg at 90% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 150% no-repeat, conic-gradient(from 270deg at 10% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,
+      `conic-gradient(from 90deg at 0% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 100% no-repeat, conic-gradient(from 270deg at 100% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`
+    ]
+  );
+  const maskImageOpacity = (0, import_framer_motion.useTransform)(
+    inViewProgress,
+    [0, 1],
+    [
+      `linear-gradient(to bottom, ${chosenColor} 0%, transparent 50%)`,
+      `linear-gradient(to bottom, ${chosenColor} 0%, transparent 95%)`
+    ]
+  );
+  const maskImage = maskLightByProgress ? maskImageOpacity : `linear-gradient(to bottom, ${chosenColor} 25%, transparent 95%)`;
+  return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+    import_framer_motion.motion.div,
+    {
+      style: {
+        ...defaultStyles,
+        background: backgroundPosition,
+        opacity,
+        maskImage,
+        WebkitMaskImage: maskImage
+      },
+      ref: elementRef,
+      id,
+      className
+    }
+  );
+};
+var throttle = (func) => {
+  let ticking = false;
+  return function() {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        func();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  };
+};
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  LightBeam,
+  useIsDarkmode
+});
+//# sourceMappingURL=index.js.map

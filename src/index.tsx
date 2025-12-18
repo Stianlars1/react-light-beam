@@ -1,20 +1,31 @@
 "use client";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import React, { useEffect, useRef } from "react";
-import { LightBeamProps } from "../types/types";
-import styles from "./css/lightBeam.module.css";
+import { useEffect, useRef } from "react";
+import type { LightBeamProps } from "./types";
 import { useIsDarkmode } from "./hooks/useDarkmode";
+
+export type { LightBeamProps };
+export { useIsDarkmode };
+
+const defaultStyles: React.CSSProperties = {
+  height: "500px",
+  width: "100vw",
+  transition: "all 0.25s ease",
+  willChange: "background, opacity",
+  userSelect: "none",
+  pointerEvents: "none",
+};
 
 export const LightBeam = ({
   className,
   colorLightmode = "rgba(0,0,0, 0.5)",
   colorDarkmode = "rgba(255, 255, 255, 0.5)",
   maskLightByProgress = false,
-  fullWidth = 1.0, // Default to full width
+  fullWidth = 1.0,
   invert = false,
-  id = undefined,
-  onLoaded = undefined,
-  scrollElement, // Add this line
+  id,
+  onLoaded,
+  scrollElement,
 }: LightBeamProps) => {
   const elementRef = useRef<HTMLDivElement>(null);
   const inViewProgress = useMotionValue(0);
@@ -23,48 +34,44 @@ export const LightBeam = ({
   const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
 
   useEffect(() => {
-    onLoaded && onLoaded();
+    onLoaded?.();
   }, []);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const handleScroll = () => {
-        if (elementRef.current) {
-          const rect = elementRef.current.getBoundingClientRect();
-          const windowHeight = window.innerHeight;
+    if (typeof window === "undefined") return;
 
-          // Invert the fullWidth value: 1 becomes 0, and 0 becomes 1
-          const adjustedFullWidth = 1 - fullWidth;
+    const handleScroll = () => {
+      if (elementRef.current) {
+        const rect = elementRef.current.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
 
-          // Calculate progress
-          const progress = invert
-            ? 0 +
-              Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight))
-            : 1 -
-              Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight));
+        const adjustedFullWidth = 1 - fullWidth;
 
-          // Update motion values
-          inViewProgress.set(progress);
-          opacity.set(0.839322 + (1 - 0.839322) * progress);
-        }
-      };
+        const progress = invert
+          ? 0 +
+            Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight))
+          : 1 -
+            Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight));
 
-      const handleScrollThrottled = throttle(handleScroll); // Approx 60fps
+        inViewProgress.set(progress);
+        opacity.set(0.839322 + (1 - 0.839322) * progress);
+      }
+    };
 
-      const target = scrollElement || window;
+    const handleScrollThrottled = throttle(handleScroll);
 
-      target.addEventListener("scroll", handleScrollThrottled);
-      window.addEventListener("resize", handleScrollThrottled);
+    const target = scrollElement || window;
 
-      // Initial call to handleScroll to set initial state
-      handleScroll();
+    target.addEventListener("scroll", handleScrollThrottled);
+    window.addEventListener("resize", handleScrollThrottled);
 
-      return () => {
-        target.removeEventListener("scroll", handleScrollThrottled);
-        window.removeEventListener("resize", handleScrollThrottled);
-      };
-    }
-  }, [inViewProgress, opacity, scrollElement]);
+    handleScroll();
+
+    return () => {
+      target.removeEventListener("scroll", handleScrollThrottled);
+      window.removeEventListener("resize", handleScrollThrottled);
+    };
+  }, [inViewProgress, opacity, scrollElement, fullWidth, invert]);
 
   const backgroundPosition = useTransform(
     inViewProgress,
@@ -90,25 +97,25 @@ export const LightBeam = ({
   return (
     <motion.div
       style={{
+        ...defaultStyles,
         background: backgroundPosition,
         opacity: opacity,
         maskImage: maskImage,
         WebkitMaskImage: maskImage,
-        willChange: "background, opacity",
       }}
       ref={elementRef}
       id={id}
-      className={`lightBeam ${className} ${styles.react__light__beam}`}
+      className={className}
     />
   );
 };
 
-const throttle = (func: Function) => {
+const throttle = (func: () => void) => {
   let ticking = false;
-  return function (this: any, ...args: any[]) {
+  return function () {
     if (!ticking) {
       requestAnimationFrame(() => {
-        func.apply(this, args);
+        func();
         ticking = false;
       });
       ticking = true;
