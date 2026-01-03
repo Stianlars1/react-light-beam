@@ -30,7 +30,7 @@ yarn add @stianlarsen/react-light-beam
 
 ```jsx
 import { LightBeam } from "@stianlarsen/react-light-beam";
-import "your-css-file.css"; // Include the necessary styles
+import "@stianlarsen/react-light-beam/styles"; // Import the component styles
 
 const App = () => {
   return (
@@ -53,6 +53,8 @@ const App = () => {
 export default App;
 ```
 
+**Important:** Make sure to import the styles as shown above. The component requires the CSS to be imported separately.
+
 ### Props
 
 | Prop Name             | Type                         | Default Value              | Description                                                                                                                                                                                                                                                                                                                                  |
@@ -72,11 +74,13 @@ export default App;
 The component comes with the following default styles:
 
 ```css
-.react__light__beam {
+.react-light-beam {
   height: 500px;
   width: 100vw;
-  transition: all 0.5s ease;
-  will-change: auto;
+  transition: all 0.25s ease;
+  will-change: all;
+  user-select: none;
+  pointer-events: none;
 }
 ```
 

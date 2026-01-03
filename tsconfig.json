@@ -1,17 +1,37 @@
 {
   "compilerOptions": {
-    "jsx": "react",
-    "target": "es2016" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-    "module": "commonjs" /* Specify what module code is generated. */,
-    "declaration": true /* Generate .d.ts files from TypeScript and JavaScript files in your project. */,
-    "outDir": "dist",
-    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
-    "strict": true /* Enable all strict type-checking options. */,
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */,
-    "typeRoots": ["./node_modules/@types", "types"]
-  },
+    // Output settings - let tsup handle actual compilation
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
 
-  "include": ["src", "types"],
+    // JSX - use react-jsx for React 17+
+    "jsx": "react-jsx",
+
+    // Type declarations
+    "declaration": true,
+    "declarationMap": true,
+
+    // Strict mode
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+
+    // Interop
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Skip node_modules type checking
+    "skipLibCheck": true,
+
+    // Don't emit - let tsup handle it
+    "noEmit": true,
+
+    // Type roots
+    "typeRoots": ["./node_modules/@types", "./types"]
+  },
+  "include": ["src/**/*", "types/**/*"],
   "exclude": ["node_modules", "dist"]
 }

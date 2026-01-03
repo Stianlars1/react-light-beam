@@ -1,0 +1,11 @@
+.react-light-beam {
+  height: 500px;
+  width: 100vw;
+  transition: all 0.25s ease;
+  will-change: all;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  pointer-events: none;
+  -webkit-transition: all 0.25s ease;
+}

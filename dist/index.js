@@ -1,0 +1,114 @@
+"use client";
+'use strict';
+
+var framerMotion = require('framer-motion');
+var react = require('react');
+var jsxRuntime = require('react/jsx-runtime');
+
+var useIsDarkmode = () => {
+  const [isDarkmode, setIsDarkmodeActive] = react.useState(false);
+  react.useEffect(() => {
+    const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => {
+      setIsDarkmodeActive(matchMedia.matches);
+    };
+    setIsDarkmodeActive(matchMedia.matches);
+    matchMedia.addEventListener("change", handleChange);
+    return () => {
+      matchMedia.removeEventListener("change", handleChange);
+    };
+  }, []);
+  return { isDarkmode };
+};
+var LightBeam = ({
+  className,
+  colorLightmode = "rgba(0,0,0, 0.5)",
+  colorDarkmode = "rgba(255, 255, 255, 0.5)",
+  maskLightByProgress = false,
+  fullWidth = 1,
+  // Default to full width
+  invert = false,
+  id = void 0,
+  onLoaded = void 0,
+  scrollElement
+  // Add this line
+}) => {
+  const elementRef = react.useRef(null);
+  const inViewProgress = framerMotion.useMotionValue(0);
+  const opacity = framerMotion.useMotionValue(0.839322);
+  const { isDarkmode } = useIsDarkmode();
+  const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
+  react.useEffect(() => {
+    onLoaded && onLoaded();
+  }, []);
+  react.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handleScroll = () => {
+        if (elementRef.current) {
+          const rect = elementRef.current.getBoundingClientRect();
+          const windowHeight = window.innerHeight;
+          const adjustedFullWidth = 1 - fullWidth;
+          const progress = invert ? 0 + Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight)) : 1 - Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight));
+          inViewProgress.set(progress);
+          opacity.set(0.839322 + (1 - 0.839322) * progress);
+        }
+      };
+      const handleScrollThrottled = throttle(handleScroll);
+      const target = scrollElement || window;
+      target.addEventListener("scroll", handleScrollThrottled);
+      window.addEventListener("resize", handleScrollThrottled);
+      handleScroll();
+      return () => {
+        target.removeEventListener("scroll", handleScrollThrottled);
+        window.removeEventListener("resize", handleScrollThrottled);
+      };
+    }
+  }, [inViewProgress, opacity, scrollElement]);
+  const backgroundPosition = framerMotion.useTransform(
+    inViewProgress,
+    [0, 1],
+    [
+      `conic-gradient(from 90deg at 90% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 150% no-repeat, conic-gradient(from 270deg at 10% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,
+      `conic-gradient(from 90deg at 0% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 100% no-repeat, conic-gradient(from 270deg at 100% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`
+    ]
+  );
+  const maskImageOpacity = framerMotion.useTransform(
+    inViewProgress,
+    [0, 1],
+    [
+      `linear-gradient(to bottom, ${chosenColor} 0%, transparent 50%)`,
+      `linear-gradient(to bottom, ${chosenColor} 0%, transparent 95%)`
+    ]
+  );
+  const maskImage = maskLightByProgress ? maskImageOpacity : `linear-gradient(to bottom, ${chosenColor} 25%, transparent 95%)`;
+  const combinedClassName = `react-light-beam ${className || ""}`.trim();
+  const motionProps = {
+    style: {
+      background: backgroundPosition,
+      opacity,
+      maskImage,
+      WebkitMaskImage: maskImage,
+      willChange: "background, opacity"
+    },
+    ref: elementRef,
+    className: combinedClassName,
+    ...id ? { id } : {}
+  };
+  return /* @__PURE__ */ jsxRuntime.jsx(framerMotion.motion.div, { ...motionProps });
+};
+var throttle = (func) => {
+  let ticking = false;
+  return function(...args) {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        func.apply(this, args);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  };
+};
+
+exports.LightBeam = LightBeam;
+//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.js.map
