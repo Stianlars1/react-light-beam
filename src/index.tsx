@@ -54,6 +54,12 @@ export const LightBeam = ({
         colorRef.current = chosenColor;
         invertRef.current = invert;
         maskByProgressRef.current = maskLightByProgress;
+
+        // PERFORMANCE: Update color CSS variable when color changes
+        // This avoids recreating ScrollTrigger on color changes
+        if (elementRef.current) {
+            elementRef.current.style.setProperty('--beam-color', chosenColor);
+        }
     }, [chosenColor, colorLightmode, colorDarkmode, invert, maskLightByProgress]);
 
     // Call onLoaded callback when component mounts
@@ -71,26 +77,49 @@ export const LightBeam = ({
             const opacityMin = 0.839322;
             const opacityRange = 0.160678; // 1 - 0.839322
 
-            // Helper function to interpolate background gradient
-            // NOTE: Takes color as parameter to always use current value (not closure!)
-            const interpolateBackground = (progress: number, color: string): string => {
+            // PERFORMANCE OPTIMIZATION: Use CSS custom properties instead of string interpolation
+            // This avoids expensive string concatenation and gradient parsing on every scroll frame
+            // We update numeric values only, browser handles gradient recalculation efficiently
+            const updateGradientVars = (progress: number): void => {
                 // At progress 0: gradients are wide (90% and 10% positions)
                 // At progress 1: gradients converge (0% and 100% positions)
                 const leftPos = 90 - progress * 90; // 90% → 0%
                 const rightPos = 10 + progress * 90; // 10% → 100%
                 const leftSize = 150 - progress * 50; // 150% → 100%
 
-                return `conic-gradient(from 90deg at ${leftPos}% 0%, ${color}, transparent 180deg) 0% 0% / 50% ${leftSize}% no-repeat, conic-gradient(from 270deg at ${rightPos}% 0%, transparent 180deg, ${color}) 100% 0% / 50% 100% no-repeat`;
+                // Update CSS variables (much faster than full gradient string replacement)
+                element.style.setProperty('--beam-left-pos', `${leftPos}%`);
+                element.style.setProperty('--beam-right-pos', `${rightPos}%`);
+                element.style.setProperty('--beam-left-size', `${leftSize}%`);
             };
 
-            // Helper function to interpolate mask
-            // NOTE: Takes color as parameter to always use current value (not closure!)
-            const interpolateMask = (progress: number, color: string): string => {
-                if (!maskByProgressRef.current) {
-                    return `linear-gradient(to bottom, ${color} 25%, transparent 95%)`;
+            // Helper function to set color (only when color changes, not every frame)
+            const updateColorVar = (color: string): void => {
+                element.style.setProperty('--beam-color', color);
+            };
+
+            // Helper function to interpolate mask stop point
+            const updateMaskVars = (progress: number): void => {
+                if (maskByProgressRef.current) {
+                    const stopPoint = 50 + progress * 45; // 50% → 95%
+                    element.style.setProperty('--beam-mask-stop', `${stopPoint}%`);
                 }
-                const stopPoint = 50 + progress * 45; // 50% → 95%
-                return `linear-gradient(to bottom, ${color} 0%, transparent ${stopPoint}%)`;
+            };
+
+            // Set initial gradient structure (once, not per frame!)
+            const initGradientStructure = (color: string): void => {
+                updateColorVar(color);
+                const baseGradient = `conic-gradient(from 90deg at var(--beam-left-pos) 0%, var(--beam-color), transparent 180deg) 0% 0% / 50% var(--beam-left-size) no-repeat, conic-gradient(from 270deg at var(--beam-right-pos) 0%, transparent 180deg, var(--beam-color)) 100% 0% / 50% 100% no-repeat`;
+                element.style.background = baseGradient;
+
+                // Set mask structure
+                if (maskByProgressRef.current) {
+                    element.style.maskImage = `linear-gradient(to bottom, var(--beam-color) 0%, transparent var(--beam-mask-stop))`;
+                    element.style.webkitMaskImage = `linear-gradient(to bottom, var(--beam-color) 0%, transparent var(--beam-mask-stop))`;
+                } else {
+                    element.style.maskImage = `linear-gradient(to bottom, var(--beam-color) 25%, transparent 95%)`;
+                    element.style.webkitMaskImage = `linear-gradient(to bottom, var(--beam-color) 25%, transparent 95%)`;
+                }
             };
 
             // EXACT MATCH TO FRAMER MOTION LOGIC:
@@ -122,6 +151,9 @@ export const LightBeam = ({
                 ? (scrollElement as Element | Window)
                 : undefined;
 
+            // Initialize gradient structure once
+            initGradientStructure(colorRef.current);
+
             // Create ScrollTrigger with FIXED range (like Framer Motion)
             const st = ScrollTrigger.create({
                 trigger: element,
@@ -133,28 +165,25 @@ export const LightBeam = ({
                     // Calculate progress using Framer Motion logic
                     const progress = calculateProgress(self.progress);
 
-                    // Update styles directly (not via gsap.set to avoid CSS variable parsing issues)
-                    element.style.background = interpolateBackground(progress, colorRef.current);
+                    // OPTIMIZED: Only update numeric CSS variables, not full gradient strings
+                    updateGradientVars(progress);
+                    updateMaskVars(progress);
                     element.style.opacity = String(opacityMin + opacityRange * progress);
-                    element.style.maskImage = interpolateMask(progress, colorRef.current);
-                    element.style.webkitMaskImage = interpolateMask(progress, colorRef.current);
                 },
                 onRefresh: (self) => {
                     // Set initial state when ScrollTrigger refreshes
                     const progress = calculateProgress(self.progress);
-                    element.style.background = interpolateBackground(progress, colorRef.current);
+                    updateGradientVars(progress);
+                    updateMaskVars(progress);
                     element.style.opacity = String(opacityMin + opacityRange * progress);
-                    element.style.maskImage = interpolateMask(progress, colorRef.current);
-                    element.style.webkitMaskImage = interpolateMask(progress, colorRef.current);
                 },
             });
 
             // Set initial state immediately
             const initialProgress = calculateProgress(st.progress);
-            element.style.background = interpolateBackground(initialProgress, colorRef.current);
+            updateGradientVars(initialProgress);
+            updateMaskVars(initialProgress);
             element.style.opacity = String(opacityMin + opacityRange * initialProgress);
-            element.style.maskImage = interpolateMask(initialProgress, colorRef.current);
-            element.style.webkitMaskImage = interpolateMask(initialProgress, colorRef.current);
 
             // Refresh ScrollTrigger after a brief delay to ensure layout is settled
             // This is especially important for Next.js SSR/hydration

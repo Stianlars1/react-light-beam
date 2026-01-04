@@ -95,6 +95,9 @@ var LightBeam = ({
     colorRef.current = chosenColor;
     invertRef.current = invert;
     maskByProgressRef.current = maskLightByProgress;
+    if (elementRef.current) {
+      elementRef.current.style.setProperty("--beam-color", chosenColor);
+    }
   }, [chosenColor, colorLightmode, colorDarkmode, invert, maskLightByProgress]);
   useEffect(() => {
     onLoaded && onLoaded();
@@ -105,18 +108,34 @@ var LightBeam = ({
       if (!element || typeof window === "undefined") return;
       const opacityMin = 0.839322;
       const opacityRange = 0.160678;
-      const interpolateBackground = (progress, color) => {
+      const updateGradientVars = (progress) => {
         const leftPos = 90 - progress * 90;
         const rightPos = 10 + progress * 90;
         const leftSize = 150 - progress * 50;
-        return `conic-gradient(from 90deg at ${leftPos}% 0%, ${color}, transparent 180deg) 0% 0% / 50% ${leftSize}% no-repeat, conic-gradient(from 270deg at ${rightPos}% 0%, transparent 180deg, ${color}) 100% 0% / 50% 100% no-repeat`;
+        element.style.setProperty("--beam-left-pos", `${leftPos}%`);
+        element.style.setProperty("--beam-right-pos", `${rightPos}%`);
+        element.style.setProperty("--beam-left-size", `${leftSize}%`);
       };
-      const interpolateMask = (progress, color) => {
-        if (!maskByProgressRef.current) {
-          return `linear-gradient(to bottom, ${color} 25%, transparent 95%)`;
+      const updateColorVar = (color) => {
+        element.style.setProperty("--beam-color", color);
+      };
+      const updateMaskVars = (progress) => {
+        if (maskByProgressRef.current) {
+          const stopPoint = 50 + progress * 45;
+          element.style.setProperty("--beam-mask-stop", `${stopPoint}%`);
         }
-        const stopPoint = 50 + progress * 45;
-        return `linear-gradient(to bottom, ${color} 0%, transparent ${stopPoint}%)`;
+      };
+      const initGradientStructure = (color) => {
+        updateColorVar(color);
+        const baseGradient = `conic-gradient(from 90deg at var(--beam-left-pos) 0%, var(--beam-color), transparent 180deg) 0% 0% / 50% var(--beam-left-size) no-repeat, conic-gradient(from 270deg at var(--beam-right-pos) 0%, transparent 180deg, var(--beam-color)) 100% 0% / 50% 100% no-repeat`;
+        element.style.background = baseGradient;
+        if (maskByProgressRef.current) {
+          element.style.maskImage = `linear-gradient(to bottom, var(--beam-color) 0%, transparent var(--beam-mask-stop))`;
+          element.style.webkitMaskImage = `linear-gradient(to bottom, var(--beam-color) 0%, transparent var(--beam-mask-stop))`;
+        } else {
+          element.style.maskImage = `linear-gradient(to bottom, var(--beam-color) 25%, transparent 95%)`;
+          element.style.webkitMaskImage = `linear-gradient(to bottom, var(--beam-color) 25%, transparent 95%)`;
+        }
       };
       const adjustedFullWidth = 1 - fullWidth;
       const calculateProgress = (rawProgress) => {
@@ -129,6 +148,7 @@ var LightBeam = ({
         return invertRef.current ? normalizedPosition : 1 - normalizedPosition;
       };
       const scroller = scrollElement ? scrollElement : void 0;
+      initGradientStructure(colorRef.current);
       const st = ScrollTrigger.create({
         trigger: element,
         start: "top bottom",
@@ -140,24 +160,21 @@ var LightBeam = ({
         // Instant scrubbing
         onUpdate: (self) => {
           const progress = calculateProgress(self.progress);
-          element.style.background = interpolateBackground(progress, colorRef.current);
+          updateGradientVars(progress);
+          updateMaskVars(progress);
           element.style.opacity = String(opacityMin + opacityRange * progress);
-          element.style.maskImage = interpolateMask(progress, colorRef.current);
-          element.style.webkitMaskImage = interpolateMask(progress, colorRef.current);
         },
         onRefresh: (self) => {
           const progress = calculateProgress(self.progress);
-          element.style.background = interpolateBackground(progress, colorRef.current);
+          updateGradientVars(progress);
+          updateMaskVars(progress);
           element.style.opacity = String(opacityMin + opacityRange * progress);
-          element.style.maskImage = interpolateMask(progress, colorRef.current);
-          element.style.webkitMaskImage = interpolateMask(progress, colorRef.current);
         }
       });
       const initialProgress = calculateProgress(st.progress);
-      element.style.background = interpolateBackground(initialProgress, colorRef.current);
+      updateGradientVars(initialProgress);
+      updateMaskVars(initialProgress);
       element.style.opacity = String(opacityMin + opacityRange * initialProgress);
-      element.style.maskImage = interpolateMask(initialProgress, colorRef.current);
-      element.style.webkitMaskImage = interpolateMask(initialProgress, colorRef.current);
       const refreshTimeout = setTimeout(() => {
         ScrollTrigger.refresh();
       }, 100);
