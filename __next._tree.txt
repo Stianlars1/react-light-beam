@@ -5,4 +5,4 @@
 :HL["/react-light-beam/_next/static/media/InterVariable_Italic-s.p.8c0e9517.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/react-light-beam/_next/static/media/JetBrainsMono-s.p.d5f50073.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/react-light-beam/_next/static/chunks/9069700509972178.css","style"]
-0:{"buildId":"E-tYi1tv6vLX8Ic8n-04-","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
+0:{"buildId":"PGbmBIiWGEVNueJelTvlL","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
