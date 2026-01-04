@@ -33,14 +33,10 @@ _A preview of @stianlarsen/react-light-beam_
 ## Installation
 
 ```bash
-npm install @stianlarsen/react-light-beam gsap
+npm install @stianlarsen/react-light-beam
 ```
 
-**Note:** GSAP is a peer dependency. If you don't have it already:
-
-```bash
-npm install gsap @gsap/react
-```
+That's it! GSAP is included automatically. ✨
 
 ## Usage
 

@@ -69,7 +69,7 @@ export default function Home() {
           {/* Install Command */}
           <div className="mt-12 inline-block bg-black/50 backdrop-blur-sm border border-white/10 rounded-lg px-6 py-4">
             <code className="text-sm text-gray-300">
-              npm install @stianlarsen/react-light-beam gsap
+              npm install @stianlarsen/react-light-beam
             </code>
           </div>
         </div>

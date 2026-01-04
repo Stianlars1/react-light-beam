@@ -1,52 +1,19 @@
 "use client";
 'use strict';
 
-var gsap4 = require('gsap');
+var gsap3 = require('gsap');
 var ScrollTrigger = require('gsap/ScrollTrigger');
-var react = require('react');
+var react = require('@gsap/react');
+var react$1 = require('react');
 var jsxRuntime = require('react/jsx-runtime');
 
 function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
 
-var gsap4__default = /*#__PURE__*/_interopDefault(gsap4);
+var gsap3__default = /*#__PURE__*/_interopDefault(gsap3);
 
-var useIsomorphicLayoutEffect = typeof document !== "undefined" ? react.useLayoutEffect : react.useEffect;
-var isConfig = (value) => value && !Array.isArray(value) && typeof value === "object";
-var emptyArray = [];
-var defaultConfig = {};
-var _gsap = gsap4__default.default;
-var useGSAP = (callback, dependencies = emptyArray) => {
-  let config = defaultConfig;
-  if (isConfig(callback)) {
-    config = callback;
-    callback = null;
-    dependencies = "dependencies" in config ? config.dependencies : emptyArray;
-  } else if (isConfig(dependencies)) {
-    config = dependencies;
-    dependencies = "dependencies" in config ? config.dependencies : emptyArray;
-  }
-  callback && typeof callback !== "function" && console.warn("First parameter must be a function or config object");
-  const { scope, revertOnUpdate } = config, mounted = react.useRef(false), context = react.useRef(_gsap.context(() => {
-  }, scope)), contextSafe = react.useRef((func) => context.current.add(null, func)), deferCleanup = dependencies && dependencies.length && !revertOnUpdate;
-  deferCleanup && useIsomorphicLayoutEffect(() => {
-    mounted.current = true;
-    return () => context.current.revert();
-  }, emptyArray);
-  useIsomorphicLayoutEffect(() => {
-    callback && context.current.add(callback, scope);
-    if (!deferCleanup || !mounted.current) {
-      return () => context.current.revert();
-    }
-  }, dependencies);
-  return { context: context.current, contextSafe: contextSafe.current };
-};
-useGSAP.register = (core) => {
-  _gsap = core;
-};
-useGSAP.headless = true;
 var useIsDarkmode = () => {
-  const [isDarkmode, setIsDarkmodeActive] = react.useState(false);
-  react.useEffect(() => {
+  const [isDarkmode, setIsDarkmodeActive] = react$1.useState(false);
+  react$1.useEffect(() => {
     const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = () => {
       setIsDarkmodeActive(matchMedia.matches);
@@ -68,7 +35,7 @@ var DustParticles = ({ config, beamColor }) => {
     opacityRange = [0.2, 0.6],
     color
   } = config;
-  const particles = react.useMemo(() => {
+  const particles = react$1.useMemo(() => {
     if (!enabled) return [];
     return Array.from({ length: count }, (_, i) => {
       const x = Math.random() * 100;
@@ -88,14 +55,14 @@ var DustParticles = ({ config, beamColor }) => {
       };
     });
   }, [enabled, count, sizeRange, opacityRange, speed]);
-  useGSAP(
+  react.useGSAP(
     () => {
       if (!enabled || particles.length === 0) return;
       const timelines = [];
       particles.forEach((particle) => {
         const element = document.getElementById(particle.id);
         if (!element) return;
-        const tl = gsap4__default.default.timeline({
+        const tl = gsap3__default.default.timeline({
           repeat: -1,
           yoyo: true,
           delay: particle.delay
@@ -149,7 +116,7 @@ var MistEffect = ({ config, beamColor }) => {
     speed = 1,
     layers = 2
   } = config;
-  const mistLayers = react.useMemo(() => {
+  const mistLayers = react$1.useMemo(() => {
     if (!enabled) return [];
     return Array.from({ length: layers }, (_, i) => {
       const layerOpacity = intensity * 0.6 / (i + 1);
@@ -165,14 +132,14 @@ var MistEffect = ({ config, beamColor }) => {
       };
     });
   }, [enabled, intensity, speed, layers]);
-  useGSAP(
+  react.useGSAP(
     () => {
       if (!enabled || mistLayers.length === 0) return;
       const timelines = [];
       mistLayers.forEach((layer) => {
         const element = document.getElementById(layer.id);
         if (!element) return;
-        const tl = gsap4__default.default.timeline({
+        const tl = gsap3__default.default.timeline({
           repeat: -1,
           yoyo: false
         });
@@ -234,11 +201,11 @@ var PulseEffect = ({ config, containerRef }) => {
     intensity = 0.2,
     easing = "sine.inOut"
   } = config;
-  useGSAP(
+  react.useGSAP(
     () => {
       if (!enabled || !containerRef.current) return;
       const element = containerRef.current;
-      const timeline = gsap4__default.default.timeline({
+      const timeline = gsap3__default.default.timeline({
         repeat: -1,
         // Infinite loop
         yoyo: true
@@ -261,10 +228,10 @@ var PulseEffect = ({ config, containerRef }) => {
         const pulseMultiplier = getComputedStyle(element).getPropertyValue("--pulse-multiplier") || "1";
         element.style.opacity = `calc(${baseOpacity} * ${pulseMultiplier})`;
       };
-      const ticker = gsap4__default.default.ticker.add(updateOpacity);
+      const ticker = gsap3__default.default.ticker.add(updateOpacity);
       return () => {
         timeline.kill();
-        gsap4__default.default.ticker.remove(ticker);
+        gsap3__default.default.ticker.remove(ticker);
       };
     },
     {
@@ -274,7 +241,7 @@ var PulseEffect = ({ config, containerRef }) => {
   );
   return null;
 };
-gsap4__default.default.registerPlugin(ScrollTrigger.ScrollTrigger, useGSAP);
+gsap3__default.default.registerPlugin(ScrollTrigger.ScrollTrigger, react.useGSAP);
 var defaultStyles = {
   height: "var(--react-light-beam-height, 500px)",
   width: "var(--react-light-beam-width, 100vw)",
@@ -309,13 +276,13 @@ var LightBeam = ({
   mist = { enabled: false },
   pulse = { enabled: false }
 }) => {
-  const elementRef = react.useRef(null);
+  const elementRef = react$1.useRef(null);
   const { isDarkmode } = useIsDarkmode();
   const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
-  const colorRef = react.useRef(chosenColor);
-  const invertRef = react.useRef(invert);
-  const maskByProgressRef = react.useRef(maskLightByProgress);
-  react.useEffect(() => {
+  const colorRef = react$1.useRef(chosenColor);
+  const invertRef = react$1.useRef(invert);
+  const maskByProgressRef = react$1.useRef(maskLightByProgress);
+  react$1.useEffect(() => {
     colorRef.current = chosenColor;
     invertRef.current = invert;
     maskByProgressRef.current = maskLightByProgress;
@@ -323,10 +290,10 @@ var LightBeam = ({
       elementRef.current.style.setProperty("--beam-color", chosenColor);
     }
   }, [chosenColor, colorLightmode, colorDarkmode, invert, maskLightByProgress]);
-  react.useEffect(() => {
+  react$1.useEffect(() => {
     onLoaded && onLoaded();
   }, []);
-  useGSAP(
+  react.useGSAP(
     () => {
       const element = elementRef.current;
       if (!element || typeof window === "undefined") return;
@@ -461,19 +428,6 @@ var LightBeam = ({
     }
   );
 };
-/*! Bundled license information:
-
-@gsap/react/src/index.js:
-  (*!
-   * @gsap/react 2.1.2
-   * https://gsap.com
-   *
-   * Copyright 2008-2025, GreenSock. All rights reserved.
-   * Subject to the terms at https://gsap.com/standard-license or for
-   * Club GSAP members, the agreement issued with that membership.
-   * @author: Jack Doyle, jack@greensock.com
-  *)
-*/
 
 exports.LightBeam = LightBeam;
 //# sourceMappingURL=index.js.map

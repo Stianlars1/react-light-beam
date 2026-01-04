@@ -1,43 +1,10 @@
 "use client";
-import gsap4 from 'gsap';
+import gsap3 from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useRef, useLayoutEffect, useEffect, useState, useMemo } from 'react';
+import { useGSAP } from '@gsap/react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { jsxs, jsx, Fragment } from 'react/jsx-runtime';
 
-var useIsomorphicLayoutEffect = typeof document !== "undefined" ? useLayoutEffect : useEffect;
-var isConfig = (value) => value && !Array.isArray(value) && typeof value === "object";
-var emptyArray = [];
-var defaultConfig = {};
-var _gsap = gsap4;
-var useGSAP = (callback, dependencies = emptyArray) => {
-  let config = defaultConfig;
-  if (isConfig(callback)) {
-    config = callback;
-    callback = null;
-    dependencies = "dependencies" in config ? config.dependencies : emptyArray;
-  } else if (isConfig(dependencies)) {
-    config = dependencies;
-    dependencies = "dependencies" in config ? config.dependencies : emptyArray;
-  }
-  callback && typeof callback !== "function" && console.warn("First parameter must be a function or config object");
-  const { scope, revertOnUpdate } = config, mounted = useRef(false), context = useRef(_gsap.context(() => {
-  }, scope)), contextSafe = useRef((func) => context.current.add(null, func)), deferCleanup = dependencies && dependencies.length && !revertOnUpdate;
-  deferCleanup && useIsomorphicLayoutEffect(() => {
-    mounted.current = true;
-    return () => context.current.revert();
-  }, emptyArray);
-  useIsomorphicLayoutEffect(() => {
-    callback && context.current.add(callback, scope);
-    if (!deferCleanup || !mounted.current) {
-      return () => context.current.revert();
-    }
-  }, dependencies);
-  return { context: context.current, contextSafe: contextSafe.current };
-};
-useGSAP.register = (core) => {
-  _gsap = core;
-};
-useGSAP.headless = true;
 var useIsDarkmode = () => {
   const [isDarkmode, setIsDarkmodeActive] = useState(false);
   useEffect(() => {
@@ -89,7 +56,7 @@ var DustParticles = ({ config, beamColor }) => {
       particles.forEach((particle) => {
         const element = document.getElementById(particle.id);
         if (!element) return;
-        const tl = gsap4.timeline({
+        const tl = gsap3.timeline({
           repeat: -1,
           yoyo: true,
           delay: particle.delay
@@ -166,7 +133,7 @@ var MistEffect = ({ config, beamColor }) => {
       mistLayers.forEach((layer) => {
         const element = document.getElementById(layer.id);
         if (!element) return;
-        const tl = gsap4.timeline({
+        const tl = gsap3.timeline({
           repeat: -1,
           yoyo: false
         });
@@ -232,7 +199,7 @@ var PulseEffect = ({ config, containerRef }) => {
     () => {
       if (!enabled || !containerRef.current) return;
       const element = containerRef.current;
-      const timeline = gsap4.timeline({
+      const timeline = gsap3.timeline({
         repeat: -1,
         // Infinite loop
         yoyo: true
@@ -255,10 +222,10 @@ var PulseEffect = ({ config, containerRef }) => {
         const pulseMultiplier = getComputedStyle(element).getPropertyValue("--pulse-multiplier") || "1";
         element.style.opacity = `calc(${baseOpacity} * ${pulseMultiplier})`;
       };
-      const ticker = gsap4.ticker.add(updateOpacity);
+      const ticker = gsap3.ticker.add(updateOpacity);
       return () => {
         timeline.kill();
-        gsap4.ticker.remove(ticker);
+        gsap3.ticker.remove(ticker);
       };
     },
     {
@@ -268,7 +235,7 @@ var PulseEffect = ({ config, containerRef }) => {
   );
   return null;
 };
-gsap4.registerPlugin(ScrollTrigger, useGSAP);
+gsap3.registerPlugin(ScrollTrigger, useGSAP);
 var defaultStyles = {
   height: "var(--react-light-beam-height, 500px)",
   width: "var(--react-light-beam-width, 100vw)",
@@ -455,19 +422,6 @@ var LightBeam = ({
     }
   );
 };
-/*! Bundled license information:
-
-@gsap/react/src/index.js:
-  (*!
-   * @gsap/react 2.1.2
-   * https://gsap.com
-   *
-   * Copyright 2008-2025, GreenSock. All rights reserved.
-   * Subject to the terms at https://gsap.com/standard-license or for
-   * Club GSAP members, the agreement issued with that membership.
-   * @author: Jack Doyle, jack@greensock.com
-  *)
-*/
 
 export { LightBeam };
 //# sourceMappingURL=index.mjs.map
