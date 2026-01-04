@@ -119,15 +119,15 @@ var LightBeam = ({
           adjustedFullWidth,
           Math.min(1, rawProgress)
         );
-        return invert ? clampedProgress : 1 - clampedProgress;
+        return invert ? 1 - clampedProgress : clampedProgress;
       };
       const scroller = scrollElement ? scrollElement : void 0;
       ScrollTrigger.ScrollTrigger.create({
         trigger: element,
-        start: "top bottom",
-        // When top of element hits bottom of viewport
-        end: "top top",
-        // When top of element hits top of viewport
+        start: "top 80%",
+        // Start at 20% from bottom of viewport (small beam)
+        end: "top 20%",
+        // End at 20% from top of viewport (wide beam)
         scroller,
         scrub: 0.3,
         // Smooth scrubbing with 300ms lag for butter-smooth feel

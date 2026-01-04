@@ -1,7 +1,7 @@
 "use client";
 
-import { LightBeam } from "@stianlarsen/react-light-beam";
-import { useState } from "react";
+import {LightBeam} from "@stianlarsen/react-light-beam";
+import {useState} from "react";
 
 export default function Home() {
   const [fullWidth, setFullWidth] = useState(1.0);
@@ -20,6 +20,7 @@ export default function Home() {
           invert={invert}
           maskLightByProgress={maskByProgress}
           onLoaded={() => console.log("✅ LightBeam loaded!")}
+          className={"absolute z-50 w-full"}
         />
 
         <div className="relative z-10 text-center px-6 max-w-4xl">
