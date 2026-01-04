@@ -104,32 +104,31 @@ export const LightBeam = ({
 
   const combinedClassName = `react-light-beam ${className || ""}`.trim();
 
-  // Motion-specific styles (always applied)
-  const motionStyles = {
-    background: backgroundPosition,
-    opacity: opacity,
-    maskImage: maskImage,
-    WebkitMaskImage: maskImage,
-    willChange: "background, opacity",
-  };
-
-  // Merge styles in order of priority:
-  // 1. Default styles (lowest)
-  // 2. Motion styles (middle)
-  // 3. User's style prop (highest - overrides everything)
-  const mergedStyles = disableDefaultStyles
+  // CRITICAL: MotionValues must be passed directly to motion.div style prop
+  // Don't spread them into plain objects or reactivity breaks!
+  const finalStyles = disableDefaultStyles
     ? {
-        ...motionStyles,
-        ...style, // User styles override motion styles
+        // No default styles, only motion values and user styles
+        background: backgroundPosition,
+        opacity: opacity,
+        maskImage: maskImage,
+        WebkitMaskImage: maskImage,
+        willChange: "background, opacity",
+        ...style, // User styles override
       }
     : {
+        // Merge default styles with motion values
         ...defaultStyles,
-        ...motionStyles,
+        background: backgroundPosition, // MotionValue (overrides default)
+        opacity: opacity,                // MotionValue (overrides default)
+        maskImage: maskImage,            // MotionValue or string
+        WebkitMaskImage: maskImage,
+        willChange: "background, opacity",
         ...style, // User styles override everything
       };
 
   const motionProps: any = {
-    style: mergedStyles,
+    style: finalStyles,
     ref: elementRef,
     className: combinedClassName,
     ...(id ? { id } : {}),

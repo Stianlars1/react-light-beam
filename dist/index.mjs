@@ -92,25 +92,31 @@ var LightBeam = ({
   );
   const maskImage = maskLightByProgress ? maskImageOpacity : `linear-gradient(to bottom, ${chosenColor} 25%, transparent 95%)`;
   const combinedClassName = `react-light-beam ${className || ""}`.trim();
-  const motionStyles = {
+  const finalStyles = disableDefaultStyles ? {
+    // No default styles, only motion values and user styles
     background: backgroundPosition,
     opacity,
     maskImage,
     WebkitMaskImage: maskImage,
-    willChange: "background, opacity"
-  };
-  const mergedStyles = disableDefaultStyles ? {
-    ...motionStyles,
+    willChange: "background, opacity",
     ...style
-    // User styles override motion styles
+    // User styles override
   } : {
+    // Merge default styles with motion values
     ...defaultStyles,
-    ...motionStyles,
+    background: backgroundPosition,
+    // MotionValue (overrides default)
+    opacity,
+    // MotionValue (overrides default)
+    maskImage,
+    // MotionValue or string
+    WebkitMaskImage: maskImage,
+    willChange: "background, opacity",
     ...style
     // User styles override everything
   };
   const motionProps = {
-    style: mergedStyles,
+    style: finalStyles,
     ref: elementRef,
     className: combinedClassName,
     ...id ? { id } : {}
