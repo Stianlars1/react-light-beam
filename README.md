@@ -28,22 +28,22 @@ yarn add @stianlarsen/react-light-beam
 
 ## Usage
 
+### Basic Usage (Recommended - No CSS Import Needed!)
+
+The component works out of the box with inline styles:
+
 ```jsx
 import { LightBeam } from "@stianlarsen/react-light-beam";
-import "@stianlarsen/react-light-beam/styles"; // Import the component styles
 
 const App = () => {
   return (
     <div className="your-container-class">
       <LightBeam
-        id="unique-lightbeam"
-        className="your-lightbeam-class"
         colorDarkmode="rgba(255, 255, 255, 0.8)"
         colorLightmode="rgba(0, 0, 0, 0.2)"
         fullWidth={0.8}
         maskLightByProgress={true}
-        invert={false}
-        scrollElement={window} // New prop to specify scroll element
+        scrollElement={window}
       />
       <YourContentHere />
     </div>
@@ -53,7 +53,34 @@ const App = () => {
 export default App;
 ```
 
-**Important:** Make sure to import the styles as shown above. The component requires the CSS to be imported separately.
+### Advanced Usage (Custom CSS)
+
+If you want to use custom CSS instead of inline styles:
+
+```jsx
+import { LightBeam } from "@stianlarsen/react-light-beam";
+import "@stianlarsen/react-light-beam/styles"; // Import base CSS
+
+const App = () => {
+  return (
+    <LightBeam
+      disableDefaultStyles={true} // Disable inline styles
+      className="my-custom-lightbeam"
+      colorDarkmode="rgba(255, 255, 255, 0.8)"
+    />
+  );
+};
+```
+
+Then provide your own CSS:
+
+```css
+.my-custom-lightbeam {
+  height: 800px; /* Custom height */
+  width: 100%;
+  /* Add your custom styles */
+}
+```
 
 ### Props
 
@@ -68,23 +95,24 @@ export default App;
 | `invert`              | `boolean`                    | `false`                    | Optional boolean to invert the scroll progress calculation.                                                                                                                                                                                                                                                                                  |
 | `scrollElement`       | `EventTarget` or `undefined` | `window`                   | Optional prop for which element to attach the scroll listener to. This could be the `window`, `document.body`, or any other scrollable element.                                                                                                                                                                                              |
 | `onLoaded`            | `undefined or () => void`    | `undefined`                | Optional function to run when the component has mounted                                                                                                                                                                                                                                                                                      |
+| `disableDefaultStyles` | `boolean`                   | `false`                    | Disable default inline styles. Set to `true` if you want to provide your own custom CSS. When enabled, you must import the styles separately: `import "@stianlarsen/react-light-beam/styles"`                                                                                                                                               |
 
 ### Default Configuration
 
-The component comes with the following default styles:
+The component includes **inline styles by default** (no CSS import needed!):
 
-```css
-.react-light-beam {
-  height: 500px;
-  width: 100vw;
-  transition: all 0.25s ease;
-  will-change: all;
-  user-select: none;
-  pointer-events: none;
+```javascript
+{
+  height: "500px",
+  width: "100vw",
+  transition: "all 0.25s ease",
+  willChange: "all",
+  userSelect: "none",
+  pointerEvents: "none"
 }
 ```
 
-These default styles ensure that the component is immediately visible when added to your application. However, for more effective use, you might want to customize its position and behavior.
+These inline styles ensure the component works immediately out of the box. If you prefer to use custom CSS, set `disableDefaultStyles={true}` and import the base CSS file.
 
 ### Recommended Usage
 

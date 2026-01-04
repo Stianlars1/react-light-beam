@@ -20,6 +20,17 @@ var useIsDarkmode = () => {
   }, []);
   return { isDarkmode };
 };
+var defaultStyles = {
+  height: "500px",
+  width: "100vw",
+  transition: "all 0.25s ease",
+  willChange: "all",
+  userSelect: "none",
+  pointerEvents: "none",
+  WebkitTransition: "all 0.25s ease",
+  WebkitUserSelect: "none",
+  MozUserSelect: "none"
+};
 var LightBeam = ({
   className,
   colorLightmode = "rgba(0,0,0, 0.5)",
@@ -30,8 +41,8 @@ var LightBeam = ({
   invert = false,
   id = void 0,
   onLoaded = void 0,
-  scrollElement
-  // Add this line
+  scrollElement,
+  disableDefaultStyles = false
 }) => {
   const elementRef = react.useRef(null);
   const inViewProgress = framerMotion.useMotionValue(0);
@@ -82,14 +93,22 @@ var LightBeam = ({
   );
   const maskImage = maskLightByProgress ? maskImageOpacity : `linear-gradient(to bottom, ${chosenColor} 25%, transparent 95%)`;
   const combinedClassName = `react-light-beam ${className || ""}`.trim();
+  const mergedStyles = disableDefaultStyles ? {
+    background: backgroundPosition,
+    opacity,
+    maskImage,
+    WebkitMaskImage: maskImage,
+    willChange: "background, opacity"
+  } : {
+    ...defaultStyles,
+    background: backgroundPosition,
+    opacity,
+    maskImage,
+    WebkitMaskImage: maskImage,
+    willChange: "background, opacity"
+  };
   const motionProps = {
-    style: {
-      background: backgroundPosition,
-      opacity,
-      maskImage,
-      WebkitMaskImage: maskImage,
-      willChange: "background, opacity"
-    },
+    style: mergedStyles,
     ref: elementRef,
     className: combinedClassName,
     ...id ? { id } : {}

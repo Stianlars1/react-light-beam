@@ -4,6 +4,19 @@ import React, { useEffect, useRef } from "react";
 import { LightBeamProps } from "../types/types";
 import { useIsDarkmode } from "./hooks/useDarkmode";
 
+// Default inline styles (can be disabled via prop)
+const defaultStyles: React.CSSProperties = {
+  height: "500px",
+  width: "100vw",
+  transition: "all 0.25s ease",
+  willChange: "all",
+  userSelect: "none",
+  pointerEvents: "none",
+  WebkitTransition: "all 0.25s ease",
+  WebkitUserSelect: "none",
+  MozUserSelect: "none",
+};
+
 export const LightBeam = ({
   className,
   colorLightmode = "rgba(0,0,0, 0.5)",
@@ -13,7 +26,8 @@ export const LightBeam = ({
   invert = false,
   id = undefined,
   onLoaded = undefined,
-  scrollElement, // Add this line
+  scrollElement,
+  disableDefaultStyles = false,
 }: LightBeamProps) => {
   const elementRef = useRef<HTMLDivElement>(null);
   const inViewProgress = useMotionValue(0);
@@ -88,14 +102,26 @@ export const LightBeam = ({
 
   const combinedClassName = `react-light-beam ${className || ""}`.trim();
 
+  // Merge default styles with motion styles
+  const mergedStyles = disableDefaultStyles
+    ? {
+        background: backgroundPosition,
+        opacity: opacity,
+        maskImage: maskImage,
+        WebkitMaskImage: maskImage,
+        willChange: "background, opacity",
+      }
+    : {
+        ...defaultStyles,
+        background: backgroundPosition,
+        opacity: opacity,
+        maskImage: maskImage,
+        WebkitMaskImage: maskImage,
+        willChange: "background, opacity",
+      };
+
   const motionProps: any = {
-    style: {
-      background: backgroundPosition,
-      opacity: opacity,
-      maskImage: maskImage,
-      WebkitMaskImage: maskImage,
-      willChange: "background, opacity",
-    },
+    style: mergedStyles,
     ref: elementRef,
     className: combinedClassName,
     ...(id ? { id } : {}),

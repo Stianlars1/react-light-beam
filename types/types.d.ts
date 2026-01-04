@@ -8,4 +8,9 @@ export type LightBeamProps = {
   id?: string;
   scrollElement?: EventTarget;
   onLoaded?: () => void;
+  /**
+   * Disable default inline styles. Set to true if you want to provide custom CSS.
+   * @default false
+   */
+  disableDefaultStyles?: boolean;
 };
