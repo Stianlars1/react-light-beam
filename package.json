@@ -1,6 +1,6 @@
 {
   "name": "@stianlarsen/react-light-beam",
-  "version": "1.0.13",
+  "version": "1.1.0",
   "description": "A customizable React component that creates a light beam effect using conic gradients. Supports dark mode and various customization options.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
