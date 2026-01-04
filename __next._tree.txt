@@ -1,2 +1,8 @@
-:HL["/react-light-beam/_next/static/chunks/7aca9a59db19b881.css","style"]
-0:{"buildId":"Z0THPNeqt9Pmx3dqhcnHI","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
+:HL["/react-light-beam/_next/static/chunks/512a9ccbeb4df627.css","style"]
+:HL["/react-light-beam/_next/static/media/GeistMono%5Bwght%5D-s.p.4771f22f.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/react-light-beam/_next/static/media/Geist%5Bwght%5D-s.p.1bd1b317.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/react-light-beam/_next/static/media/InterVariable-s.p.53d7b668.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/react-light-beam/_next/static/media/InterVariable_Italic-s.p.8c0e9517.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/react-light-beam/_next/static/media/JetBrainsMono-s.p.d5f50073.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/react-light-beam/_next/static/chunks/9069700509972178.css","style"]
+0:{"buildId":"E-tYi1tv6vLX8Ic8n-04-","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
