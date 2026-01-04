@@ -57,23 +57,25 @@ export const LightBeam = ({
             const opacityRange = 0.160678; // 1 - 0.839322
 
             // Helper function to interpolate background gradient
-            const interpolateBackground = (progress: number): string => {
+            // NOTE: Takes color as parameter to always use current value (not closure!)
+            const interpolateBackground = (progress: number, color: string): string => {
                 // At progress 0: gradients are wide (90% and 10% positions)
                 // At progress 1: gradients converge (0% and 100% positions)
                 const leftPos = 90 - progress * 90; // 90% → 0%
                 const rightPos = 10 + progress * 90; // 10% → 100%
                 const leftSize = 150 - progress * 50; // 150% → 100%
 
-                return `conic-gradient(from 90deg at ${leftPos}% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% ${leftSize}% no-repeat, conic-gradient(from 270deg at ${rightPos}% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`;
+                return `conic-gradient(from 90deg at ${leftPos}% 0%, ${color}, transparent 180deg) 0% 0% / 50% ${leftSize}% no-repeat, conic-gradient(from 270deg at ${rightPos}% 0%, transparent 180deg, ${color}) 100% 0% / 50% 100% no-repeat`;
             };
 
             // Helper function to interpolate mask
-            const interpolateMask = (progress: number): string => {
+            // NOTE: Takes color as parameter to always use current value (not closure!)
+            const interpolateMask = (progress: number, color: string): string => {
                 if (!maskLightByProgress) {
-                    return `linear-gradient(to bottom, ${chosenColor} 25%, transparent 95%)`;
+                    return `linear-gradient(to bottom, ${color} 25%, transparent 95%)`;
                 }
                 const stopPoint = 50 + progress * 45; // 50% → 95%
-                return `linear-gradient(to bottom, ${chosenColor} 0%, transparent ${stopPoint}%)`;
+                return `linear-gradient(to bottom, ${color} 0%, transparent ${stopPoint}%)`;
             };
 
             // Helper function to calculate progress from raw ScrollTrigger progress
@@ -119,28 +121,28 @@ export const LightBeam = ({
                         // Before start - lock at 0%
                         const progress = calculateProgress(0);
                         gsap.set(element, {
-                            background: interpolateBackground(progress),
+                            background: interpolateBackground(progress, chosenColor),
                             opacity: opacityMin + opacityRange * progress,
-                            maskImage: interpolateMask(progress),
-                            webkitMaskImage: interpolateMask(progress),
+                            maskImage: interpolateMask(progress, chosenColor),
+                            webkitMaskImage: interpolateMask(progress, chosenColor),
                         });
                     } else if (self.progress > 1) {
                         // Past end - lock at 100%
                         const progress = calculateProgress(1);
                         gsap.set(element, {
-                            background: interpolateBackground(progress),
+                            background: interpolateBackground(progress, chosenColor),
                             opacity: opacityMin + opacityRange * progress,
-                            maskImage: interpolateMask(progress),
-                            webkitMaskImage: interpolateMask(progress),
+                            maskImage: interpolateMask(progress, chosenColor),
+                            webkitMaskImage: interpolateMask(progress, chosenColor),
                         });
                     } else {
                         // Inside range - animate normally
                         const progress = calculateProgress(self.progress);
                         gsap.set(element, {
-                            background: interpolateBackground(progress),
+                            background: interpolateBackground(progress, chosenColor),
                             opacity: opacityMin + opacityRange * progress,
-                            maskImage: interpolateMask(progress),
-                            webkitMaskImage: interpolateMask(progress),
+                            maskImage: interpolateMask(progress, chosenColor),
+                            webkitMaskImage: interpolateMask(progress, chosenColor),
                         });
                     }
                 },
@@ -148,10 +150,10 @@ export const LightBeam = ({
                     // Set initial state when ScrollTrigger refreshes
                     const progress = calculateProgress(self.progress);
                     gsap.set(element, {
-                        background: interpolateBackground(progress),
+                        background: interpolateBackground(progress, chosenColor),
                         opacity: opacityMin + opacityRange * progress,
-                        maskImage: interpolateMask(progress),
-                        webkitMaskImage: interpolateMask(progress),
+                        maskImage: interpolateMask(progress, chosenColor),
+                        webkitMaskImage: interpolateMask(progress, chosenColor),
                     });
                 },
             });
@@ -159,10 +161,10 @@ export const LightBeam = ({
             // Set initial state immediately
             const initialProgress = calculateProgress(st.progress);
             gsap.set(element, {
-                background: interpolateBackground(initialProgress),
+                background: interpolateBackground(initialProgress, chosenColor),
                 opacity: opacityMin + opacityRange * initialProgress,
-                maskImage: interpolateMask(initialProgress),
-                webkitMaskImage: interpolateMask(initialProgress),
+                maskImage: interpolateMask(initialProgress, chosenColor),
+                webkitMaskImage: interpolateMask(initialProgress, chosenColor),
             });
 
             // Refresh ScrollTrigger after a brief delay to ensure layout is settled

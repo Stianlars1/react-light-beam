@@ -94,18 +94,18 @@ var LightBeam = ({
       if (!element || typeof window === "undefined") return;
       const opacityMin = 0.839322;
       const opacityRange = 0.160678;
-      const interpolateBackground = (progress) => {
+      const interpolateBackground = (progress, color) => {
         const leftPos = 90 - progress * 90;
         const rightPos = 10 + progress * 90;
         const leftSize = 150 - progress * 50;
-        return `conic-gradient(from 90deg at ${leftPos}% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% ${leftSize}% no-repeat, conic-gradient(from 270deg at ${rightPos}% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`;
+        return `conic-gradient(from 90deg at ${leftPos}% 0%, ${color}, transparent 180deg) 0% 0% / 50% ${leftSize}% no-repeat, conic-gradient(from 270deg at ${rightPos}% 0%, transparent 180deg, ${color}) 100% 0% / 50% 100% no-repeat`;
       };
-      const interpolateMask = (progress) => {
+      const interpolateMask = (progress, color) => {
         if (!maskLightByProgress) {
-          return `linear-gradient(to bottom, ${chosenColor} 25%, transparent 95%)`;
+          return `linear-gradient(to bottom, ${color} 25%, transparent 95%)`;
         }
         const stopPoint = 50 + progress * 45;
-        return `linear-gradient(to bottom, ${chosenColor} 0%, transparent ${stopPoint}%)`;
+        return `linear-gradient(to bottom, ${color} 0%, transparent ${stopPoint}%)`;
       };
       const calculateProgress = (rawProgress) => {
         const clamped = Math.max(0, Math.min(1, rawProgress));
@@ -126,45 +126,45 @@ var LightBeam = ({
           if (self.progress < 0) {
             const progress = calculateProgress(0);
             gsap2.set(element, {
-              background: interpolateBackground(progress),
+              background: interpolateBackground(progress, chosenColor),
               opacity: opacityMin + opacityRange * progress,
-              maskImage: interpolateMask(progress),
-              webkitMaskImage: interpolateMask(progress)
+              maskImage: interpolateMask(progress, chosenColor),
+              webkitMaskImage: interpolateMask(progress, chosenColor)
             });
           } else if (self.progress > 1) {
             const progress = calculateProgress(1);
             gsap2.set(element, {
-              background: interpolateBackground(progress),
+              background: interpolateBackground(progress, chosenColor),
               opacity: opacityMin + opacityRange * progress,
-              maskImage: interpolateMask(progress),
-              webkitMaskImage: interpolateMask(progress)
+              maskImage: interpolateMask(progress, chosenColor),
+              webkitMaskImage: interpolateMask(progress, chosenColor)
             });
           } else {
             const progress = calculateProgress(self.progress);
             gsap2.set(element, {
-              background: interpolateBackground(progress),
+              background: interpolateBackground(progress, chosenColor),
               opacity: opacityMin + opacityRange * progress,
-              maskImage: interpolateMask(progress),
-              webkitMaskImage: interpolateMask(progress)
+              maskImage: interpolateMask(progress, chosenColor),
+              webkitMaskImage: interpolateMask(progress, chosenColor)
             });
           }
         },
         onRefresh: (self) => {
           const progress = calculateProgress(self.progress);
           gsap2.set(element, {
-            background: interpolateBackground(progress),
+            background: interpolateBackground(progress, chosenColor),
             opacity: opacityMin + opacityRange * progress,
-            maskImage: interpolateMask(progress),
-            webkitMaskImage: interpolateMask(progress)
+            maskImage: interpolateMask(progress, chosenColor),
+            webkitMaskImage: interpolateMask(progress, chosenColor)
           });
         }
       });
       const initialProgress = calculateProgress(st.progress);
       gsap2.set(element, {
-        background: interpolateBackground(initialProgress),
+        background: interpolateBackground(initialProgress, chosenColor),
         opacity: opacityMin + opacityRange * initialProgress,
-        maskImage: interpolateMask(initialProgress),
-        webkitMaskImage: interpolateMask(initialProgress)
+        maskImage: interpolateMask(initialProgress, chosenColor),
+        webkitMaskImage: interpolateMask(initialProgress, chosenColor)
       });
       setTimeout(() => {
         ScrollTrigger.refresh();
