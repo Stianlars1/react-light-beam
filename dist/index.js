@@ -66,7 +66,7 @@ var LightBeam = ({
         }
       };
       const handleScrollThrottled = throttle(handleScroll);
-      const target = scrollElement || window;
+      const target = scrollElement || document.body;
       target.addEventListener("scroll", handleScrollThrottled);
       window.addEventListener("resize", handleScrollThrottled);
       handleScroll();
@@ -75,7 +75,7 @@ var LightBeam = ({
         window.removeEventListener("resize", handleScrollThrottled);
       };
     }
-  }, [inViewProgress, opacity, scrollElement]);
+  }, [inViewProgress, opacity, scrollElement, fullWidth, invert]);
   const backgroundPosition = framerMotion.useTransform(
     inViewProgress,
     [0, 1],

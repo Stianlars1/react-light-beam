@@ -1,8 +1,8 @@
 "use client";
-import { motion, useMotionValue, useTransform } from "framer-motion";
-import React, { useEffect, useRef } from "react";
-import { LightBeamProps } from "../types/types";
-import { useIsDarkmode } from "./hooks/useDarkmode";
+import {motion, useMotionValue, useTransform} from "framer-motion";
+import React, {useEffect, useRef} from "react";
+import {LightBeamProps} from "../types/types";
+import {useIsDarkmode} from "./hooks/useDarkmode";
 
 // Default inline styles using CSS variables for easy customization
 // Users can override via className by setting CSS variables
@@ -66,7 +66,9 @@ export const LightBeam = ({
 
       const handleScrollThrottled = throttle(handleScroll); // Approx 60fps
 
-      const target = scrollElement || window;
+      // Default to document.body (works in modern React/Next.js setups)
+      // window doesn't fire scroll events in many modern setups!
+      const target = scrollElement || document.body || document.documentElement;
 
       target.addEventListener("scroll", handleScrollThrottled);
       window.addEventListener("resize", handleScrollThrottled);
@@ -79,7 +81,7 @@ export const LightBeam = ({
         window.removeEventListener("resize", handleScrollThrottled);
       };
     }
-  }, [inViewProgress, opacity, scrollElement]);
+  }, [inViewProgress, opacity, scrollElement, fullWidth, invert]);
 
   const backgroundPosition = useTransform(
     inViewProgress,
