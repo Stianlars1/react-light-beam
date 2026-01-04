@@ -64,7 +64,7 @@ var LightBeam = ({
         }
       };
       const handleScrollThrottled = throttle(handleScroll);
-      const target = scrollElement || document.body;
+      const target = scrollElement || document.body || document.documentElement;
       target.addEventListener("scroll", handleScrollThrottled);
       window.addEventListener("resize", handleScrollThrottled);
       handleScroll();
