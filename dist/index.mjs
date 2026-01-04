@@ -123,13 +123,31 @@ var LightBeam = ({
         scrub: true,
         // TRUE for instant scrubbing (no lag) - smoother bidirectional
         onUpdate: (self) => {
-          const progress = calculateProgress(self.progress);
-          gsap2.set(element, {
-            background: interpolateBackground(progress),
-            opacity: opacityMin + opacityRange * progress,
-            maskImage: interpolateMask(progress),
-            webkitMaskImage: interpolateMask(progress)
-          });
+          if (self.progress < 0) {
+            const progress = calculateProgress(0);
+            gsap2.set(element, {
+              background: interpolateBackground(progress),
+              opacity: opacityMin + opacityRange * progress,
+              maskImage: interpolateMask(progress),
+              webkitMaskImage: interpolateMask(progress)
+            });
+          } else if (self.progress > 1) {
+            const progress = calculateProgress(1);
+            gsap2.set(element, {
+              background: interpolateBackground(progress),
+              opacity: opacityMin + opacityRange * progress,
+              maskImage: interpolateMask(progress),
+              webkitMaskImage: interpolateMask(progress)
+            });
+          } else {
+            const progress = calculateProgress(self.progress);
+            gsap2.set(element, {
+              background: interpolateBackground(progress),
+              opacity: opacityMin + opacityRange * progress,
+              maskImage: interpolateMask(progress),
+              webkitMaskImage: interpolateMask(progress)
+            });
+          }
         },
         onRefresh: (self) => {
           const progress = calculateProgress(self.progress);

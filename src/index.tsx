@@ -113,16 +113,36 @@ export const LightBeam = ({
                 scroller: scroller,
                 scrub: true, // TRUE for instant scrubbing (no lag) - smoother bidirectional
                 onUpdate: (self) => {
-                    // Calculate progress with our custom logic
-                    const progress = calculateProgress(self.progress);
-
-                    // Update element styles directly (bypasses React for performance)
-                    gsap.set(element, {
-                        background: interpolateBackground(progress),
-                        opacity: opacityMin + opacityRange * progress,
-                        maskImage: interpolateMask(progress),
-                        webkitMaskImage: interpolateMask(progress),
-                    });
+                    // CRITICAL: Only animate while INSIDE the trigger range
+                    // Once past the end, lock at final value
+                    if (self.progress < 0) {
+                        // Before start - lock at 0%
+                        const progress = calculateProgress(0);
+                        gsap.set(element, {
+                            background: interpolateBackground(progress),
+                            opacity: opacityMin + opacityRange * progress,
+                            maskImage: interpolateMask(progress),
+                            webkitMaskImage: interpolateMask(progress),
+                        });
+                    } else if (self.progress > 1) {
+                        // Past end - lock at 100%
+                        const progress = calculateProgress(1);
+                        gsap.set(element, {
+                            background: interpolateBackground(progress),
+                            opacity: opacityMin + opacityRange * progress,
+                            maskImage: interpolateMask(progress),
+                            webkitMaskImage: interpolateMask(progress),
+                        });
+                    } else {
+                        // Inside range - animate normally
+                        const progress = calculateProgress(self.progress);
+                        gsap.set(element, {
+                            background: interpolateBackground(progress),
+                            opacity: opacityMin + opacityRange * progress,
+                            maskImage: interpolateMask(progress),
+                            webkitMaskImage: interpolateMask(progress),
+                        });
+                    }
                 },
                 onRefresh: (self) => {
                     // Set initial state when ScrollTrigger refreshes
