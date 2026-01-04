@@ -20,7 +20,7 @@ export default function Home() {
           invert={invert}
           maskLightByProgress={maskByProgress}
           onLoaded={() => console.log("✅ LightBeam loaded!")}
-          className={"absolute z-50 w-full"}
+          className={"max-h:[500px] absolute top:[-100px] inset:[0]"}
         />
 
         <div className="relative z-10 text-center px-6 max-w-4xl">

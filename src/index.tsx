@@ -136,6 +136,7 @@ export const LightBeam = ({
             }, 100);
         },
         {
+            
             dependencies: [
                 chosenColor,
                 fullWidth,
