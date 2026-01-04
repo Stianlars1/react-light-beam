@@ -225,7 +225,7 @@ export const LightBeam = ({
                 start: scrollStart, // When to start the animation
                 end: scrollEnd, // When to end the animation
                 scroller: scroller,
-                scrub: true, // Instant scrubbing for smooth 60fps
+                scrub: 0.3, // Fast catch-up (300ms) for responsive scroll without jitter
                 onUpdate: (self) => {
                     // Calculate progress using Framer Motion logic
                     const progress = calculateProgress(self.progress);

@@ -383,8 +383,8 @@ var LightBeam = ({
         end: scrollEnd,
         // When to end the animation
         scroller,
-        scrub: true,
-        // Instant scrubbing for smooth 60fps
+        scrub: 0.3,
+        // Fast catch-up (300ms) for responsive scroll without jitter
         onUpdate: (self) => {
           const progress = calculateProgress(self.progress);
           applyProgressState(progress);
