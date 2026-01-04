@@ -36,7 +36,7 @@ export const LightBeam = ({
                               colorLightmode = "rgba(0,0,0, 0.5)",
                               colorDarkmode = "rgba(255, 255, 255, 0.5)",
                               maskLightByProgress = false,
-                              fullWidth = 1.0, // Default to full width range
+                              fullWidth = 0.8, // Default to full width range
                               invert = false,
                               id = undefined,
                               onLoaded = undefined,
@@ -303,13 +303,13 @@ export const LightBeam = ({
         >
             {/* Atmospheric Effects */}
             {dustParticles.enabled && (
-                <DustParticles config={dustParticles} beamColor={chosenColor} />
+                <DustParticles config={dustParticles} beamColor={chosenColor}/>
             )}
             {mist.enabled && (
-                <MistEffect config={mist} beamColor={chosenColor} />
+                <MistEffect config={mist} beamColor={chosenColor}/>
             )}
             {pulse.enabled && (
-                <PulseEffect config={pulse} containerRef={elementRef} />
+                <PulseEffect config={pulse} containerRef={elementRef}/>
             )}
         </div>
     );

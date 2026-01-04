@@ -4,34 +4,45 @@
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     // JSX - use react-jsx for React 17+
     "jsx": "react-jsx",
-
     // Type declarations
     "declaration": true,
     "declarationMap": true,
-
     // Strict mode
     "strict": true,
     "noUncheckedIndexedAccess": true,
-
+    "plugins": [
+      {
+        "name": "babel-plugin-react-compiler"
+      }
+    ],
     // Interop
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
-
     // Skip node_modules type checking
     "skipLibCheck": true,
-
     // Don't emit - let tsup handle it
     "noEmit": true,
-
     // Type roots
-    "typeRoots": ["./node_modules/@types", "./types"]
+    "typeRoots": [
+      "./node_modules/@types",
+      "./types"
+    ]
   },
-  "include": ["src/**/*", "types/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*",
+    "types/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

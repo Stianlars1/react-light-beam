@@ -16,10 +16,12 @@ var useIsDarkmode = () => {
   react$1.useEffect(() => {
     const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = () => {
+      console.log("Darkmode match?", matchMedia.matches);
       setIsDarkmodeActive(matchMedia.matches);
     };
     setIsDarkmodeActive(matchMedia.matches);
     matchMedia.addEventListener("change", handleChange);
+    handleChange();
     return () => {
       matchMedia.removeEventListener("change", handleChange);
     };
@@ -265,7 +267,7 @@ var LightBeam = ({
   colorLightmode = "rgba(0,0,0, 0.5)",
   colorDarkmode = "rgba(255, 255, 255, 0.5)",
   maskLightByProgress = false,
-  fullWidth = 1,
+  fullWidth = 0.8,
   // Default to full width range
   invert = false,
   id = void 0,

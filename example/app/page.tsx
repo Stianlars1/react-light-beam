@@ -3,8 +3,12 @@
 import {useState} from "react";
 import {LightBeam} from "../../dist";
 
+const beamColors = {
+  BLACK_AND_WHITE: "black_white",
+}
+
 export default function Home() {
-  const [fullWidth, setFullWidth] = useState(1.0);
+  const [fullWidth, setFullWidth] = useState(0.8);
   const [invert, setInvert] = useState(false);
   const [maskByProgress, setMaskByProgress] = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -13,6 +17,11 @@ export default function Home() {
   const [dustEnabled, setDustEnabled] = useState(false);
   const [mistEnabled, setMistEnabled] = useState(false);
   const [pulseEnabled, setPulseEnabled] = useState(false);
+
+  const [lightModeColor, setLightModeColor] = useState("hsl(225 90% 55%)");
+  const [darkModeColor, setDarkModeColor] = useState("hsl(255 50% 50%)");
+
+
 
   return (
     <main className="relative min-h-[300vh]">
@@ -28,8 +37,8 @@ export default function Home() {
       </section>
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <LightBeam
-          colorDarkmode="rgba(255, 255, 255, 0.8)"
-          colorLightmode="rgba(0, 0, 0, 0.2)"
+          colorDarkmode={darkModeColor}
+          colorLightmode={lightModeColor}
           fullWidth={fullWidth}
           invert={invert}
           maskLightByProgress={maskByProgress}

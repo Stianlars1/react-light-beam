@@ -1,27 +1,30 @@
 "use client";
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 
 export const useIsDarkmode = () => {
-  const [isDarkmode, setIsDarkmodeActive] = useState(false);
+    const [isDarkmode, setIsDarkmodeActive] = useState(false);
 
-  useEffect(() => {
-    const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
+    useEffect(() => {
+        const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
 
-    const handleChange = () => {
-      setIsDarkmodeActive(matchMedia.matches);
-    };
+        const handleChange = () => {
+            console.log("Darkmode match?", matchMedia.matches)
+            
+            setIsDarkmodeActive(matchMedia.matches);
+        };
 
-    // Set the initial value
-    setIsDarkmodeActive(matchMedia.matches);
+        // Set the initial value
+        setIsDarkmodeActive(matchMedia.matches);
 
-    // Listen for changes
-    matchMedia.addEventListener("change", handleChange);
+        // Listen for changes
+        matchMedia.addEventListener("change", handleChange);
+        handleChange()
 
-    // Cleanup listener on unmount
-    return () => {
-      matchMedia.removeEventListener("change", handleChange);
-    };
-  }, []);
+        // Cleanup listener on unmount
+        return () => {
+            matchMedia.removeEventListener("change", handleChange);
+        };
+    }, []);
 
-  return { isDarkmode };
+    return {isDarkmode};
 };
