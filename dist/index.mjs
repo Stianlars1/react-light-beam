@@ -132,4 +132,3 @@ var throttle = (func) => {
 
 export { LightBeam };
 //# sourceMappingURL=index.mjs.map
-//# sourceMappingURL=index.mjs.map

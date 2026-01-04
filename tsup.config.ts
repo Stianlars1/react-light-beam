@@ -33,6 +33,6 @@ export default defineConfig({
   // Code splitting - false for libraries
   splitting: false,
 
-  // Copy CSS files and add "use client" directive after build
-  onSuccess: "shx mkdir -p dist/css && shx cp src/css/lightBeam.css dist/css/ && node scripts/add-use-client.js",
+  // Add "use client" directive after build
+  onSuccess: "node scripts/add-use-client.js",
 });

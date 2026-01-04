@@ -98,18 +98,17 @@ Then in your CSS:
 />
 ```
 
-### Advanced: Full CSS Control
+### Advanced: Full CSS Control (className only)
 
-For complete CSS control using className only:
+For complete control via CSS, disable default inline styles:
 
 ```jsx
 import { LightBeam } from "@stianlarsen/react-light-beam";
-import "@stianlarsen/react-light-beam/styles"; // Import base CSS
 
 const App = () => {
   return (
     <LightBeam
-      disableDefaultStyles={true} // Disable inline styles
+      disableDefaultStyles={true} // Disable all inline styles
       className="my-custom-lightbeam"
       colorDarkmode="rgba(255, 255, 255, 0.8)"
     />
@@ -117,14 +116,17 @@ const App = () => {
 };
 ```
 
-Then style with CSS:
+Then provide all styles via CSS:
 
 ```css
 .my-custom-lightbeam {
   height: 800px;
   width: 100%;
   position: absolute;
-  /* Full control via CSS */
+  transition: all 0.3s ease;
+  user-select: none;
+  pointer-events: none;
+  /* Full control - you provide all styles */
 }
 ```
 
@@ -142,7 +144,7 @@ Then style with CSS:
 | `invert`              | `boolean`                    | `false`                    | Optional boolean to invert the scroll progress calculation.                                                                                                                                                                                                                                                                                  |
 | `scrollElement`       | `EventTarget` or `undefined` | `window`                   | Optional prop for which element to attach the scroll listener to. This could be the `window`, `document.body`, or any other scrollable element.                                                                                                                                                                                              |
 | `onLoaded`            | `undefined or () => void`    | `undefined`                | Optional function to run when the component has mounted                                                                                                                                                                                                                                                                                      |
-| `disableDefaultStyles` | `boolean`                   | `false`                    | Disable default inline styles. Set to `true` if you want to provide your own custom CSS. When enabled, you must import the styles separately: `import "@stianlarsen/react-light-beam/styles"`                                                                                                                                               |
+| `disableDefaultStyles` | `boolean`                   | `false`                    | Disable default inline styles. Set to `true` if you want to provide all styles yourself via className. Gives you complete CSS control without any default styling.                                                                                                                                                                           |
 
 ### Default Configuration
 
