@@ -78,73 +78,51 @@ export const LightBeam = ({
                 return `linear-gradient(to bottom, ${color} 0%, transparent ${stopPoint}%)`;
             };
 
-            // Helper function to calculate progress from raw ScrollTrigger progress
+            // EXACT MATCH TO FRAMER MOTION LOGIC:
+            // fullWidth controls the MINIMUM beam width, not maximum!
+            // fullWidth=1.0 → beam goes from 0% to 100% wide (full range)
+            // fullWidth=0.5 → beam goes from 50% to 100% wide (narrower minimum)
+            // fullWidth=0.2 → beam goes from 80% to 100% wide (very narrow minimum)
+            const adjustedFullWidth = 1 - fullWidth;
+
+            // Helper function to calculate progress (EXACTLY like Framer Motion)
             const calculateProgress = (rawProgress: number): number => {
-                // ScrollTrigger gives us 0-1 as element moves from start to end
-                // Clamp to ensure it's always between 0 and 1
-                const clamped = Math.max(0, Math.min(1, rawProgress));
+                // ScrollTrigger rawProgress is 0-1 as element moves from start to end
+                // We need to convert this to match Framer's rect.top / windowHeight logic
 
-                // Scale by fullWidth to control maximum beam width
-                // fullWidth=1.0 → progress goes 0 to 1 (fully wide)
-                // fullWidth=0.5 → progress goes 0 to 0.5 (50% wide max)
-                // fullWidth=0.2 → progress goes 0 to 0.2 (20% wide max)
+                // Apply fullWidth floor (minimum progress value)
+                const normalizedPosition = Math.max(
+                    adjustedFullWidth,  // Minimum (floor)
+                    Math.min(1, rawProgress)  // Maximum (ceiling at 1)
+                );
 
-                // Default (invert=false): 0→fullWidth = small to wide
-                // Inverted (invert=true): fullWidth→0 = wide to small
-                return (invert ? 1 - clamped : clamped) * fullWidth;
+                // Apply invert logic (EXACTLY like Framer Motion)
+                return invert ? normalizedPosition : 1 - normalizedPosition;
             };
 
             // Determine scroll container
-            // ScrollTrigger expects undefined (default), window, or a DOM element
-            // If scrollElement is provided, cast it as Element (GSAP accepts Element or Window)
             const scroller = scrollElement
                 ? (scrollElement as Element | Window)
                 : undefined;
 
-            // Calculate end position based on fullWidth
-            // fullWidth=1.0 → end="top 0%" (animates through entire viewport)
-            // fullWidth=0.5 → end="top 50%" (stops animation halfway)
-            // fullWidth=0.0 → end="top 100%" (no animation)
-            const endPosition = `top ${(1 - fullWidth) * 100}%`;
-
-            // Create ScrollTrigger
+            // Create ScrollTrigger with FIXED range (like Framer Motion)
             const st = ScrollTrigger.create({
                 trigger: element,
-                start: "top bottom", // Start when element enters viewport from bottom
-                end: endPosition, // End position based on fullWidth prop
+                start: "top bottom", // Element top hits viewport bottom
+                end: "top top", // Element top hits viewport top
                 scroller: scroller,
-                scrub: true, // TRUE for instant scrubbing (no lag) - smoother bidirectional
+                scrub: true, // Instant scrubbing
                 onUpdate: (self) => {
-                    // CRITICAL: Only animate while INSIDE the trigger range
-                    // Once past the end, lock at final value
-                    if (self.progress < 0) {
-                        // Before start - lock at 0%
-                        const progress = calculateProgress(0);
-                        gsap.set(element, {
-                            background: interpolateBackground(progress, chosenColor),
-                            opacity: opacityMin + opacityRange * progress,
-                            maskImage: interpolateMask(progress, chosenColor),
-                            webkitMaskImage: interpolateMask(progress, chosenColor),
-                        });
-                    } else if (self.progress > 1) {
-                        // Past end - lock at 100%
-                        const progress = calculateProgress(1);
-                        gsap.set(element, {
-                            background: interpolateBackground(progress, chosenColor),
-                            opacity: opacityMin + opacityRange * progress,
-                            maskImage: interpolateMask(progress, chosenColor),
-                            webkitMaskImage: interpolateMask(progress, chosenColor),
-                        });
-                    } else {
-                        // Inside range - animate normally
-                        const progress = calculateProgress(self.progress);
-                        gsap.set(element, {
-                            background: interpolateBackground(progress, chosenColor),
-                            opacity: opacityMin + opacityRange * progress,
-                            maskImage: interpolateMask(progress, chosenColor),
-                            webkitMaskImage: interpolateMask(progress, chosenColor),
-                        });
-                    }
+                    // Calculate progress using Framer Motion logic
+                    const progress = calculateProgress(self.progress);
+
+                    // Update styles
+                    gsap.set(element, {
+                        background: interpolateBackground(progress, chosenColor),
+                        opacity: opacityMin + opacityRange * progress,
+                        maskImage: interpolateMask(progress, chosenColor),
+                        webkitMaskImage: interpolateMask(progress, chosenColor),
+                    });
                 },
                 onRefresh: (self) => {
                     // Set initial state when ScrollTrigger refreshes

@@ -107,47 +107,34 @@ var LightBeam = ({
         const stopPoint = 50 + progress * 45;
         return `linear-gradient(to bottom, ${color} 0%, transparent ${stopPoint}%)`;
       };
+      const adjustedFullWidth = 1 - fullWidth;
       const calculateProgress = (rawProgress) => {
-        const clamped = Math.max(0, Math.min(1, rawProgress));
-        return (invert ? 1 - clamped : clamped) * fullWidth;
+        const normalizedPosition = Math.max(
+          adjustedFullWidth,
+          // Minimum (floor)
+          Math.min(1, rawProgress)
+          // Maximum (ceiling at 1)
+        );
+        return invert ? normalizedPosition : 1 - normalizedPosition;
       };
       const scroller = scrollElement ? scrollElement : void 0;
-      const endPosition = `top ${(1 - fullWidth) * 100}%`;
       const st = ScrollTrigger.create({
         trigger: element,
         start: "top bottom",
-        // Start when element enters viewport from bottom
-        end: endPosition,
-        // End position based on fullWidth prop
+        // Element top hits viewport bottom
+        end: "top top",
+        // Element top hits viewport top
         scroller,
         scrub: true,
-        // TRUE for instant scrubbing (no lag) - smoother bidirectional
+        // Instant scrubbing
         onUpdate: (self) => {
-          if (self.progress < 0) {
-            const progress = calculateProgress(0);
-            gsap2.set(element, {
-              background: interpolateBackground(progress, chosenColor),
-              opacity: opacityMin + opacityRange * progress,
-              maskImage: interpolateMask(progress, chosenColor),
-              webkitMaskImage: interpolateMask(progress, chosenColor)
-            });
-          } else if (self.progress > 1) {
-            const progress = calculateProgress(1);
-            gsap2.set(element, {
-              background: interpolateBackground(progress, chosenColor),
-              opacity: opacityMin + opacityRange * progress,
-              maskImage: interpolateMask(progress, chosenColor),
-              webkitMaskImage: interpolateMask(progress, chosenColor)
-            });
-          } else {
-            const progress = calculateProgress(self.progress);
-            gsap2.set(element, {
-              background: interpolateBackground(progress, chosenColor),
-              opacity: opacityMin + opacityRange * progress,
-              maskImage: interpolateMask(progress, chosenColor),
-              webkitMaskImage: interpolateMask(progress, chosenColor)
-            });
-          }
+          const progress = calculateProgress(self.progress);
+          gsap2.set(element, {
+            background: interpolateBackground(progress, chosenColor),
+            opacity: opacityMin + opacityRange * progress,
+            maskImage: interpolateMask(progress, chosenColor),
+            webkitMaskImage: interpolateMask(progress, chosenColor)
+          });
         },
         onRefresh: (self) => {
           const progress = calculateProgress(self.progress);
