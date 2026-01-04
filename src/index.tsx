@@ -133,34 +133,28 @@ export const LightBeam = ({
                     // Calculate progress using Framer Motion logic
                     const progress = calculateProgress(self.progress);
 
-                    // Update styles
-                    gsap.set(element, {
-                        background: interpolateBackground(progress, colorRef.current),
-                        opacity: opacityMin + opacityRange * progress,
-                        maskImage: interpolateMask(progress, colorRef.current),
-                        webkitMaskImage: interpolateMask(progress, colorRef.current),
-                    });
+                    // Update styles directly (not via gsap.set to avoid CSS variable parsing issues)
+                    element.style.background = interpolateBackground(progress, colorRef.current);
+                    element.style.opacity = String(opacityMin + opacityRange * progress);
+                    element.style.maskImage = interpolateMask(progress, colorRef.current);
+                    element.style.webkitMaskImage = interpolateMask(progress, colorRef.current);
                 },
                 onRefresh: (self) => {
                     // Set initial state when ScrollTrigger refreshes
                     const progress = calculateProgress(self.progress);
-                    gsap.set(element, {
-                        background: interpolateBackground(progress, colorRef.current),
-                        opacity: opacityMin + opacityRange * progress,
-                        maskImage: interpolateMask(progress, colorRef.current),
-                        webkitMaskImage: interpolateMask(progress, colorRef.current),
-                    });
+                    element.style.background = interpolateBackground(progress, colorRef.current);
+                    element.style.opacity = String(opacityMin + opacityRange * progress);
+                    element.style.maskImage = interpolateMask(progress, colorRef.current);
+                    element.style.webkitMaskImage = interpolateMask(progress, colorRef.current);
                 },
             });
 
             // Set initial state immediately
             const initialProgress = calculateProgress(st.progress);
-            gsap.set(element, {
-                background: interpolateBackground(initialProgress, colorRef.current),
-                opacity: opacityMin + opacityRange * initialProgress,
-                maskImage: interpolateMask(initialProgress, colorRef.current),
-                webkitMaskImage: interpolateMask(initialProgress, colorRef.current),
-            });
+            element.style.background = interpolateBackground(initialProgress, colorRef.current);
+            element.style.opacity = String(opacityMin + opacityRange * initialProgress);
+            element.style.maskImage = interpolateMask(initialProgress, colorRef.current);
+            element.style.webkitMaskImage = interpolateMask(initialProgress, colorRef.current);
 
             // Refresh ScrollTrigger after a brief delay to ensure layout is settled
             // This is especially important for Next.js SSR/hydration

@@ -1,5 +1,5 @@
 "use client";
-import gsap2 from 'gsap';
+import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useRef, useLayoutEffect, useEffect, useState } from 'react';
 import { jsx } from 'react/jsx-runtime';
@@ -8,7 +8,7 @@ var useIsomorphicLayoutEffect = typeof document !== "undefined" ? useLayoutEffec
 var isConfig = (value) => value && !Array.isArray(value) && typeof value === "object";
 var emptyArray = [];
 var defaultConfig = {};
-var _gsap = gsap2;
+var _gsap = gsap;
 var useGSAP = (callback, dependencies = emptyArray) => {
   let config = defaultConfig;
   if (isConfig(callback)) {
@@ -53,7 +53,7 @@ var useIsDarkmode = () => {
   }, []);
   return { isDarkmode };
 };
-gsap2.registerPlugin(ScrollTrigger, useGSAP);
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 var defaultStyles = {
   height: "var(--react-light-beam-height, 500px)",
   width: "var(--react-light-beam-width, 100vw)",
@@ -140,30 +140,24 @@ var LightBeam = ({
         // Instant scrubbing
         onUpdate: (self) => {
           const progress = calculateProgress(self.progress);
-          gsap2.set(element, {
-            background: interpolateBackground(progress, colorRef.current),
-            opacity: opacityMin + opacityRange * progress,
-            maskImage: interpolateMask(progress, colorRef.current),
-            webkitMaskImage: interpolateMask(progress, colorRef.current)
-          });
+          element.style.background = interpolateBackground(progress, colorRef.current);
+          element.style.opacity = String(opacityMin + opacityRange * progress);
+          element.style.maskImage = interpolateMask(progress, colorRef.current);
+          element.style.webkitMaskImage = interpolateMask(progress, colorRef.current);
         },
         onRefresh: (self) => {
           const progress = calculateProgress(self.progress);
-          gsap2.set(element, {
-            background: interpolateBackground(progress, colorRef.current),
-            opacity: opacityMin + opacityRange * progress,
-            maskImage: interpolateMask(progress, colorRef.current),
-            webkitMaskImage: interpolateMask(progress, colorRef.current)
-          });
+          element.style.background = interpolateBackground(progress, colorRef.current);
+          element.style.opacity = String(opacityMin + opacityRange * progress);
+          element.style.maskImage = interpolateMask(progress, colorRef.current);
+          element.style.webkitMaskImage = interpolateMask(progress, colorRef.current);
         }
       });
       const initialProgress = calculateProgress(st.progress);
-      gsap2.set(element, {
-        background: interpolateBackground(initialProgress, colorRef.current),
-        opacity: opacityMin + opacityRange * initialProgress,
-        maskImage: interpolateMask(initialProgress, colorRef.current),
-        webkitMaskImage: interpolateMask(initialProgress, colorRef.current)
-      });
+      element.style.background = interpolateBackground(initialProgress, colorRef.current);
+      element.style.opacity = String(opacityMin + opacityRange * initialProgress);
+      element.style.maskImage = interpolateMask(initialProgress, colorRef.current);
+      element.style.webkitMaskImage = interpolateMask(initialProgress, colorRef.current);
       const refreshTimeout = setTimeout(() => {
         ScrollTrigger.refresh();
       }, 100);
