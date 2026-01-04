@@ -13,6 +13,15 @@ export default function Home() {
     <main className="relative min-h-[300vh]">
       {/* Hero Section with LightBeam */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        Scroll...
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
+            <div className="w-1 h-3 bg-white/50 rounded-full mt-2"></div>
+          </div>
+        </div>
+      </section>
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <LightBeam
           colorDarkmode="rgba(255, 255, 255, 0.8)"
           colorLightmode="rgba(0, 0, 0, 0.2)"
@@ -57,12 +66,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white/50 rounded-full mt-2"></div>
-          </div>
-        </div>
       </section>
 
       {/* Interactive Controls */}

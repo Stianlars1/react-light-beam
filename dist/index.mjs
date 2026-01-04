@@ -92,7 +92,6 @@ var LightBeam = ({
     () => {
       const element = elementRef.current;
       if (!element || typeof window === "undefined") return;
-      const adjustedFullWidth = 1 - fullWidth;
       const opacityMin = 0.839322;
       const opacityRange = 0.160678;
       const interpolateBackground = (progress) => {
@@ -109,19 +108,16 @@ var LightBeam = ({
         return `linear-gradient(to bottom, ${chosenColor} 0%, transparent ${stopPoint}%)`;
       };
       const calculateProgress = (rawProgress) => {
-        const clampedProgress = Math.max(
-          adjustedFullWidth,
-          Math.min(1, rawProgress)
-        );
-        return invert ? 1 - clampedProgress : clampedProgress;
+        return (invert ? 1 - rawProgress : rawProgress) * fullWidth;
       };
       const scroller = scrollElement ? scrollElement : void 0;
+      const endPosition = `top ${(1 - fullWidth) * 100}%`;
       ScrollTrigger.create({
         trigger: element,
-        start: "top 80%",
-        // Start at 20% from bottom of viewport (small beam)
-        end: "top 20%",
-        // End at 20% from top of viewport (wide beam)
+        start: "top bottom",
+        // Start when element enters viewport from bottom
+        end: endPosition,
+        // End position based on fullWidth prop
         scroller,
         scrub: 0.3,
         // Smooth scrubbing with 300ms lag for butter-smooth feel

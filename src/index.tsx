@@ -53,7 +53,6 @@ export const LightBeam = ({
             if (!element || typeof window === "undefined") return;
 
             // Pre-calculate constants for performance
-            const adjustedFullWidth = 1 - fullWidth;
             const opacityMin = 0.839322;
             const opacityRange = 0.160678; // 1 - 0.839322
 
@@ -80,15 +79,14 @@ export const LightBeam = ({
             // Helper function to calculate progress from raw ScrollTrigger progress
             const calculateProgress = (rawProgress: number): number => {
                 // ScrollTrigger gives us 0-1 as element moves from start to end
-                // Apply fullWidth clamping (prevents beam from going below minimum width)
-                const clampedProgress = Math.max(
-                    adjustedFullWidth,
-                    Math.min(1, rawProgress)
-                );
+                // Scale by fullWidth to control maximum beam width
+                // fullWidth=1.0 → progress goes 0 to 1 (fully wide)
+                // fullWidth=0.5 → progress goes 0 to 0.5 (50% wide max)
+                // fullWidth=0.2 → progress goes 0 to 0.2 (20% wide max)
 
-                // Default (invert=false): 0→1 = small to wide (as element enters viewport)
-                // Inverted (invert=true): 1→0 = wide to small (reverse animation)
-                return invert ? 1 - clampedProgress : clampedProgress;
+                // Default (invert=false): 0→fullWidth = small to wide
+                // Inverted (invert=true): fullWidth→0 = wide to small
+                return (invert ? 1 - rawProgress : rawProgress) * fullWidth;
             };
 
             // Determine scroll container
@@ -98,11 +96,17 @@ export const LightBeam = ({
                 ? (scrollElement as Element | Window)
                 : undefined;
 
+            // Calculate end position based on fullWidth
+            // fullWidth=1.0 → end="top 0%" (animates through entire viewport)
+            // fullWidth=0.5 → end="top 50%" (stops animation halfway)
+            // fullWidth=0.0 → end="top 100%" (no animation)
+            const endPosition = `top ${(1 - fullWidth) * 100}%`;
+
             // Create ScrollTrigger
             ScrollTrigger.create({
                 trigger: element,
-                start: "top 80%", // Start at 20% from bottom of viewport (small beam)
-                end: "top 20%", // End at 20% from top of viewport (wide beam)
+                start: "top bottom", // Start when element enters viewport from bottom
+                end: endPosition, // End position based on fullWidth prop
                 scroller: scroller,
                 scrub: 0.3, // Smooth scrubbing with 300ms lag for butter-smooth feel
                 onUpdate: (self) => {
