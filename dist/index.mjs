@@ -278,14 +278,40 @@ var LightBeam = ({
   const colorRef = useRef(chosenColor);
   const invertRef = useRef(invert);
   const maskByProgressRef = useRef(maskLightByProgress);
+  const scrollTriggerRef = useRef(null);
   useEffect(() => {
     colorRef.current = chosenColor;
-    invertRef.current = invert;
-    maskByProgressRef.current = maskLightByProgress;
     if (elementRef.current) {
       elementRef.current.style.setProperty("--beam-color", chosenColor);
     }
-  }, [chosenColor, colorLightmode, colorDarkmode, invert, maskLightByProgress]);
+  }, [chosenColor, colorLightmode, colorDarkmode]);
+  useEffect(() => {
+    const prevInvert = invertRef.current;
+    invertRef.current = invert;
+    if (prevInvert !== invert && scrollTriggerRef.current && elementRef.current) {
+      const st = scrollTriggerRef.current;
+      elementRef.current;
+      st.refresh();
+    }
+  }, [invert]);
+  useEffect(() => {
+    const prevMaskByProgress = maskByProgressRef.current;
+    maskByProgressRef.current = maskLightByProgress;
+    if (prevMaskByProgress !== maskLightByProgress && elementRef.current) {
+      const element = elementRef.current;
+      if (maskLightByProgress) {
+        element.style.setProperty("--beam-mask-stop", "50%");
+        element.style.maskImage = `linear-gradient(to bottom, var(--beam-color) 0%, transparent var(--beam-mask-stop))`;
+        element.style.webkitMaskImage = `linear-gradient(to bottom, var(--beam-color) 0%, transparent var(--beam-mask-stop))`;
+      } else {
+        element.style.maskImage = `linear-gradient(to bottom, var(--beam-color) 25%, transparent 95%)`;
+        element.style.webkitMaskImage = `linear-gradient(to bottom, var(--beam-color) 25%, transparent 95%)`;
+      }
+      if (scrollTriggerRef.current) {
+        scrollTriggerRef.current.refresh();
+      }
+    }
+  }, [maskLightByProgress]);
   useEffect(() => {
     onLoaded && onLoaded();
   }, []);
@@ -295,22 +321,8 @@ var LightBeam = ({
       if (!element || typeof window === "undefined") return;
       const opacityMin = 0.839322;
       const opacityRange = 0.160678;
-      const updateGradientVars = (progress) => {
-        const leftPos = 90 - progress * 90;
-        const rightPos = 10 + progress * 90;
-        const leftSize = 150 - progress * 50;
-        element.style.setProperty("--beam-left-pos", `${leftPos}%`);
-        element.style.setProperty("--beam-right-pos", `${rightPos}%`);
-        element.style.setProperty("--beam-left-size", `${leftSize}%`);
-      };
       const updateColorVar = (color) => {
         element.style.setProperty("--beam-color", color);
-      };
-      const updateMaskVars = (progress) => {
-        if (maskByProgressRef.current) {
-          const stopPoint = 50 + progress * 45;
-          element.style.setProperty("--beam-mask-stop", `${stopPoint}%`);
-        }
       };
       const initGradientStructure = (color) => {
         updateColorVar(color);
@@ -335,6 +347,26 @@ var LightBeam = ({
         return invertRef.current ? normalizedPosition : 1 - normalizedPosition;
       };
       const scroller = scrollElement ? scrollElement : void 0;
+      const applyProgressState = (progress) => {
+        const leftPos = 90 - progress * 90;
+        const rightPos = 10 + progress * 90;
+        const leftSize = 150 - progress * 50;
+        const baseOpacity = opacityMin + opacityRange * progress;
+        const maskStop = maskByProgressRef.current ? 50 + progress * 45 : void 0;
+        const cssProps = {
+          "--beam-left-pos": `${leftPos}%`,
+          "--beam-right-pos": `${rightPos}%`,
+          "--beam-left-size": `${leftSize}%`,
+          "--base-opacity": baseOpacity
+        };
+        if (maskStop !== void 0) {
+          cssProps["--beam-mask-stop"] = `${maskStop}%`;
+        }
+        if (!pulse.enabled) {
+          cssProps.opacity = baseOpacity;
+        }
+        gsap3.set(element, cssProps);
+      };
       initGradientStructure(colorRef.current);
       const st = ScrollTrigger.create({
         trigger: element,
@@ -347,33 +379,16 @@ var LightBeam = ({
         // Instant scrubbing for smooth 60fps
         onUpdate: (self) => {
           const progress = calculateProgress(self.progress);
-          updateGradientVars(progress);
-          updateMaskVars(progress);
-          const baseOpacity = opacityMin + opacityRange * progress;
-          element.style.setProperty("--base-opacity", String(baseOpacity));
-          if (!pulse.enabled) {
-            element.style.opacity = String(baseOpacity);
-          }
+          applyProgressState(progress);
         },
         onRefresh: (self) => {
           const progress = calculateProgress(self.progress);
-          updateGradientVars(progress);
-          updateMaskVars(progress);
-          const baseOpacity = opacityMin + opacityRange * progress;
-          element.style.setProperty("--base-opacity", String(baseOpacity));
-          if (!pulse.enabled) {
-            element.style.opacity = String(baseOpacity);
-          }
+          applyProgressState(progress);
         }
       });
+      scrollTriggerRef.current = st;
       const initialProgress = calculateProgress(st.progress);
-      updateGradientVars(initialProgress);
-      updateMaskVars(initialProgress);
-      const initialBaseOpacity = opacityMin + opacityRange * initialProgress;
-      element.style.setProperty("--base-opacity", String(initialBaseOpacity));
-      if (!pulse.enabled) {
-        element.style.opacity = String(initialBaseOpacity);
-      }
+      applyProgressState(initialProgress);
       const refreshTimeout = setTimeout(() => {
         ScrollTrigger.refresh();
       }, 100);

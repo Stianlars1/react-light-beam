@@ -57,18 +57,63 @@ export const LightBeam = ({
     const invertRef = useRef(invert);
     const maskByProgressRef = useRef(maskLightByProgress);
 
+    // Store ScrollTrigger instance for manual updates
+    const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
+
     // Update refs whenever values change
     useEffect(() => {
         colorRef.current = chosenColor;
-        invertRef.current = invert;
-        maskByProgressRef.current = maskLightByProgress;
 
         // PERFORMANCE: Update color CSS variable when color changes
         // This avoids recreating ScrollTrigger on color changes
         if (elementRef.current) {
             elementRef.current.style.setProperty('--beam-color', chosenColor);
         }
-    }, [chosenColor, colorLightmode, colorDarkmode, invert, maskLightByProgress]);
+    }, [chosenColor, colorLightmode, colorDarkmode]);
+
+    // Handle invert changes separately - needs immediate update
+    useEffect(() => {
+        const prevInvert = invertRef.current;
+        invertRef.current = invert;
+
+        // If invert changed and ScrollTrigger exists, immediately update
+        if (prevInvert !== invert && scrollTriggerRef.current && elementRef.current) {
+            const st = scrollTriggerRef.current;
+            const element = elementRef.current;
+
+            // Force immediate recalculation with new invert value
+            // This prevents lag/jitter when toggling invert during scroll
+            st.refresh();
+        }
+    }, [invert]);
+
+    // Handle maskLightByProgress changes separately - needs structure rebuild
+    useEffect(() => {
+        const prevMaskByProgress = maskByProgressRef.current;
+        maskByProgressRef.current = maskLightByProgress;
+
+        // If maskLightByProgress changed and element exists, rebuild mask structure
+        if (prevMaskByProgress !== maskLightByProgress && elementRef.current) {
+            const element = elementRef.current;
+
+            // Rebuild mask gradient structure with new setting
+            if (maskLightByProgress) {
+                // Initialize mask stop value
+                element.style.setProperty('--beam-mask-stop', '50%');
+                element.style.maskImage = `linear-gradient(to bottom, var(--beam-color) 0%, transparent var(--beam-mask-stop))`;
+                element.style.webkitMaskImage = `linear-gradient(to bottom, var(--beam-color) 0%, transparent var(--beam-mask-stop))`;
+            } else {
+                // Static mask
+                element.style.maskImage = `linear-gradient(to bottom, var(--beam-color) 25%, transparent 95%)`;
+                element.style.webkitMaskImage = `linear-gradient(to bottom, var(--beam-color) 25%, transparent 95%)`;
+            }
+
+            // If ScrollTrigger exists, refresh to apply current state
+            if (scrollTriggerRef.current) {
+                scrollTriggerRef.current.refresh();
+            }
+        }
+    }, [maskLightByProgress]);
 
     // Call onLoaded callback when component mounts
     useEffect(() => {
@@ -85,33 +130,9 @@ export const LightBeam = ({
             const opacityMin = 0.839322;
             const opacityRange = 0.160678; // 1 - 0.839322
 
-            // PERFORMANCE OPTIMIZATION: Use CSS custom properties instead of string interpolation
-            // This avoids expensive string concatenation and gradient parsing on every scroll frame
-            // We update numeric values only, browser handles gradient recalculation efficiently
-            const updateGradientVars = (progress: number): void => {
-                // At progress 0: gradients are wide (90% and 10% positions)
-                // At progress 1: gradients converge (0% and 100% positions)
-                const leftPos = 90 - progress * 90; // 90% → 0%
-                const rightPos = 10 + progress * 90; // 10% → 100%
-                const leftSize = 150 - progress * 50; // 150% → 100%
-
-                // Update CSS variables (much faster than full gradient string replacement)
-                element.style.setProperty('--beam-left-pos', `${leftPos}%`);
-                element.style.setProperty('--beam-right-pos', `${rightPos}%`);
-                element.style.setProperty('--beam-left-size', `${leftSize}%`);
-            };
-
             // Helper function to set color (only when color changes, not every frame)
             const updateColorVar = (color: string): void => {
                 element.style.setProperty('--beam-color', color);
-            };
-
-            // Helper function to interpolate mask stop point
-            const updateMaskVars = (progress: number): void => {
-                if (maskByProgressRef.current) {
-                    const stopPoint = 50 + progress * 45; // 50% → 95%
-                    element.style.setProperty('--beam-mask-stop', `${stopPoint}%`);
-                }
             };
 
             // Set initial gradient structure (once, not per frame!)
@@ -162,6 +183,39 @@ export const LightBeam = ({
                 ? (scrollElement as Element | Window)
                 : undefined;
 
+            // PERFORMANCE OPTIMIZATION: Shared update function to avoid code duplication
+            // Batches all style updates for better performance
+            const applyProgressState = (progress: number): void => {
+                // Pre-calculate all values
+                const leftPos = 90 - progress * 90;
+                const rightPos = 10 + progress * 90;
+                const leftSize = 150 - progress * 50;
+                const baseOpacity = opacityMin + opacityRange * progress;
+                const maskStop = maskByProgressRef.current ? 50 + progress * 45 : undefined;
+
+                // BATCH UPDATE: Use single gsap.set() call instead of multiple setProperty()
+                // This is significantly faster as GSAP batches all updates in one frame
+                const cssProps: any = {
+                    '--beam-left-pos': `${leftPos}%`,
+                    '--beam-right-pos': `${rightPos}%`,
+                    '--beam-left-size': `${leftSize}%`,
+                    '--base-opacity': baseOpacity,
+                };
+
+                // Conditionally add mask stop
+                if (maskStop !== undefined) {
+                    cssProps['--beam-mask-stop'] = `${maskStop}%`;
+                }
+
+                // Conditionally add opacity (only if pulse not enabled)
+                if (!pulse.enabled) {
+                    cssProps.opacity = baseOpacity;
+                }
+
+                // Single batch update via GSAP (more efficient than multiple setProperty calls)
+                gsap.set(element, cssProps);
+            };
+
             // Initialize gradient structure once
             initGradientStructure(colorRef.current);
 
@@ -176,47 +230,26 @@ export const LightBeam = ({
                     // Calculate progress using Framer Motion logic
                     const progress = calculateProgress(self.progress);
 
-                    // OPTIMIZED: Only update numeric CSS variables, not full gradient strings
-                    updateGradientVars(progress);
-                    updateMaskVars(progress);
-
-                    // Set base opacity as CSS variable so pulse can multiply it
-                    const baseOpacity = opacityMin + opacityRange * progress;
-                    element.style.setProperty('--base-opacity', String(baseOpacity));
-
-                    // If pulse is not enabled, set opacity directly
-                    if (!pulse.enabled) {
-                        element.style.opacity = String(baseOpacity);
-                    }
+                    // Apply all updates in single batch
+                    applyProgressState(progress);
                 },
                 onRefresh: (self) => {
                     // CRITICAL: ScrollTrigger.refresh() is called on window resize, orientation change,
                     // or when content changes. We need to recalculate and reapply styles to ensure
                     // the beam renders correctly after layout changes.
                     const progress = calculateProgress(self.progress);
-                    updateGradientVars(progress);
-                    updateMaskVars(progress);
 
-                    const baseOpacity = opacityMin + opacityRange * progress;
-                    element.style.setProperty('--base-opacity', String(baseOpacity));
-
-                    if (!pulse.enabled) {
-                        element.style.opacity = String(baseOpacity);
-                    }
+                    // Apply all updates in single batch
+                    applyProgressState(progress);
                 },
             });
 
-            // Set initial state immediately
+            // Store ScrollTrigger instance for manual updates (invert/maskLightByProgress changes)
+            scrollTriggerRef.current = st;
+
+            // Set initial state immediately using batched update
             const initialProgress = calculateProgress(st.progress);
-            updateGradientVars(initialProgress);
-            updateMaskVars(initialProgress);
-
-            const initialBaseOpacity = opacityMin + opacityRange * initialProgress;
-            element.style.setProperty('--base-opacity', String(initialBaseOpacity));
-
-            if (!pulse.enabled) {
-                element.style.opacity = String(initialBaseOpacity);
-            }
+            applyProgressState(initialProgress);
 
             // Refresh ScrollTrigger after a brief delay to ensure layout is settled
             // This is especially important for Next.js SSR/hydration
