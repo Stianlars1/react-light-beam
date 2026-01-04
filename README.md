@@ -10,7 +10,7 @@ A customizable React component that creates a light beam effect using conic grad
 
 ## Preview
 
-![LightBeam Component](https://github.com/Stianlars1/react-light-beam/blob/5422cdc60ae7ab6b52d644d452646bec7212f76f/lightBeam.png)
+![LightBeam Component](https://raw.githubusercontent.com/Stianlars1/react-light-beam/main/lightBeam.png)
 
 _A preview of @stianlarsen/react-light-beam_
 
