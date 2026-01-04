@@ -14,12 +14,15 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 const defaultStyles: React.CSSProperties = {
     height: "var(--react-light-beam-height, 500px)",
     width: "var(--react-light-beam-width, 100vw)",
-    transition: "var(--react-light-beam-transition, all 0.25s ease)",
+    // CRITICAL: NO transition on GSAP-controlled properties (background, opacity, mask)
+    // Transitions would fight with GSAP's instant updates, causing visual glitches
+    // especially when scroll direction changes
+    transition: "none",
     willChange: "background, opacity", // Specific properties for better performance
     userSelect: "none",
     pointerEvents: "none",
     contain: "layout style paint", // CSS containment for better performance
-    WebkitTransition: "var(--react-light-beam-transition, all 0.25s ease)",
+    WebkitTransition: "none",
     WebkitUserSelect: "none",
     MozUserSelect: "none",
 };
@@ -41,13 +44,17 @@ export const LightBeam = ({
     const {isDarkmode} = useIsDarkmode();
     const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
 
-    // Use a ref to track the current color without triggering useGSAP re-runs
+    // Use refs to track current values without triggering useGSAP re-runs
     const colorRef = useRef(chosenColor);
+    const invertRef = useRef(invert);
+    const maskByProgressRef = useRef(maskLightByProgress);
 
-    // Update the ref whenever color changes (dark mode toggle or prop changes)
+    // Update refs whenever values change
     useEffect(() => {
         colorRef.current = chosenColor;
-    }, [chosenColor, colorLightmode, colorDarkmode]);
+        invertRef.current = invert;
+        maskByProgressRef.current = maskLightByProgress;
+    }, [chosenColor, colorLightmode, colorDarkmode, invert, maskLightByProgress]);
 
     // Call onLoaded callback when component mounts
     useEffect(() => {
@@ -79,7 +86,7 @@ export const LightBeam = ({
             // Helper function to interpolate mask
             // NOTE: Takes color as parameter to always use current value (not closure!)
             const interpolateMask = (progress: number, color: string): string => {
-                if (!maskLightByProgress) {
+                if (!maskByProgressRef.current) {
                     return `linear-gradient(to bottom, ${color} 25%, transparent 95%)`;
                 }
                 const stopPoint = 50 + progress * 45; // 50% → 95%
@@ -106,7 +113,21 @@ export const LightBeam = ({
                 );
 
                 // Apply invert logic (EXACTLY like Framer Motion)
-                return invert ? normalizedPosition : 1 - normalizedPosition;
+                // Use invertRef to get current value without closure issues
+                const finalProgress = invertRef.current ? normalizedPosition : 1 - normalizedPosition;
+
+                // DEBUG: Log to see what's happening
+                if (invertRef.current) {
+                    console.log('[INVERT=TRUE]', {
+                        rawProgress,
+                        normalizedPosition,
+                        finalProgress,
+                        scrollDirection: rawProgress > (window as any).lastRawProgress ? 'DOWN' : 'UP'
+                    });
+                    (window as any).lastRawProgress = rawProgress;
+                }
+
+                return finalProgress;
             };
 
             // Determine scroll container
@@ -167,14 +188,13 @@ export const LightBeam = ({
             };
         },
         {
-            // CRITICAL: Don't include chosenColor in dependencies!
-            // We use colorRef.current to get the latest color without recreating ScrollTrigger
-            // This prevents the beam from disappearing when color changes (dark mode toggle)
+            // CRITICAL: Use refs for frequently changing values!
+            // colorRef, invertRef, maskByProgressRef allow updates without recreating ScrollTrigger
+            // This prevents visual glitches when these values change mid-scroll
+            // Only include values that affect ScrollTrigger's position/range calculations
             dependencies: [
-                fullWidth,
-                invert,
-                maskLightByProgress,
-                scrollElement,
+                fullWidth,  // Affects trigger range
+                scrollElement,  // Affects which element to watch
             ],
             scope: elementRef,
         }

@@ -63,14 +63,17 @@ gsap2__default.default.registerPlugin(ScrollTrigger.ScrollTrigger, useGSAP);
 var defaultStyles = {
   height: "var(--react-light-beam-height, 500px)",
   width: "var(--react-light-beam-width, 100vw)",
-  transition: "var(--react-light-beam-transition, all 0.25s ease)",
+  // CRITICAL: NO transition on GSAP-controlled properties (background, opacity, mask)
+  // Transitions would fight with GSAP's instant updates, causing visual glitches
+  // especially when scroll direction changes
+  transition: "none",
   willChange: "background, opacity",
   // Specific properties for better performance
   userSelect: "none",
   pointerEvents: "none",
   contain: "layout style paint",
   // CSS containment for better performance
-  WebkitTransition: "var(--react-light-beam-transition, all 0.25s ease)",
+  WebkitTransition: "none",
   WebkitUserSelect: "none",
   MozUserSelect: "none"
 };
@@ -92,9 +95,13 @@ var LightBeam = ({
   const { isDarkmode } = useIsDarkmode();
   const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
   const colorRef = react.useRef(chosenColor);
+  const invertRef = react.useRef(invert);
+  const maskByProgressRef = react.useRef(maskLightByProgress);
   react.useEffect(() => {
     colorRef.current = chosenColor;
-  }, [chosenColor, colorLightmode, colorDarkmode]);
+    invertRef.current = invert;
+    maskByProgressRef.current = maskLightByProgress;
+  }, [chosenColor, colorLightmode, colorDarkmode, invert, maskLightByProgress]);
   react.useEffect(() => {
     onLoaded && onLoaded();
   }, []);
@@ -111,7 +118,7 @@ var LightBeam = ({
         return `conic-gradient(from 90deg at ${leftPos}% 0%, ${color}, transparent 180deg) 0% 0% / 50% ${leftSize}% no-repeat, conic-gradient(from 270deg at ${rightPos}% 0%, transparent 180deg, ${color}) 100% 0% / 50% 100% no-repeat`;
       };
       const interpolateMask = (progress, color) => {
-        if (!maskLightByProgress) {
+        if (!maskByProgressRef.current) {
           return `linear-gradient(to bottom, ${color} 25%, transparent 95%)`;
         }
         const stopPoint = 50 + progress * 45;
@@ -125,7 +132,17 @@ var LightBeam = ({
           Math.min(1, 1 - rawProgress)
           // Convert GSAP progress to Framer's normalized position
         );
-        return invert ? normalizedPosition : 1 - normalizedPosition;
+        const finalProgress = invertRef.current ? normalizedPosition : 1 - normalizedPosition;
+        if (invertRef.current) {
+          console.log("[INVERT=TRUE]", {
+            rawProgress,
+            normalizedPosition,
+            finalProgress,
+            scrollDirection: rawProgress > window.lastRawProgress ? "DOWN" : "UP"
+          });
+          window.lastRawProgress = rawProgress;
+        }
+        return finalProgress;
       };
       const scroller = scrollElement ? scrollElement : void 0;
       const st = ScrollTrigger.ScrollTrigger.create({
@@ -172,14 +189,15 @@ var LightBeam = ({
       };
     },
     {
-      // CRITICAL: Don't include chosenColor in dependencies!
-      // We use colorRef.current to get the latest color without recreating ScrollTrigger
-      // This prevents the beam from disappearing when color changes (dark mode toggle)
+      // CRITICAL: Use refs for frequently changing values!
+      // colorRef, invertRef, maskByProgressRef allow updates without recreating ScrollTrigger
+      // This prevents visual glitches when these values change mid-scroll
+      // Only include values that affect ScrollTrigger's position/range calculations
       dependencies: [
         fullWidth,
-        invert,
-        maskLightByProgress,
+        // Affects trigger range
         scrollElement
+        // Affects which element to watch
       ],
       scope: elementRef
     }
