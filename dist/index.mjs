@@ -261,7 +261,7 @@ var LightBeam = ({
   colorLightmode = "rgba(0,0,0, 0.5)",
   colorDarkmode = "rgba(255, 255, 255, 0.5)",
   maskLightByProgress = false,
-  fullWidth = 0.8,
+  fullWidth = 1,
   // Default to full width range
   invert = false,
   id = void 0,
