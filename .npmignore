@@ -1,0 +1,36 @@
+# Development files
+src/
+example/
+demo/
+*.tgz
+
+# Documentation (except README which is in "files")
+GSAP_MIGRATION_PLAN.md
+PERFORMANCE_COMPARISON.md
+REACT-NPM-LIBRARY-GUIDE.md
+
+# Config files
+tsconfig.json
+tsup.config.ts
+
+# Build artifacts (tsup handles this)
+.turbo/
+.next/
+
+# Version control
+.git/
+.gitignore
+
+# Dependencies
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Scripts
+scripts/

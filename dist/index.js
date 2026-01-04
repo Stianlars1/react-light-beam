@@ -1,10 +1,49 @@
 "use client";
 'use strict';
 
-var framerMotion = require('framer-motion');
+var gsap2 = require('gsap');
+var ScrollTrigger = require('gsap/ScrollTrigger');
 var react = require('react');
 var jsxRuntime = require('react/jsx-runtime');
 
+function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
+
+var gsap2__default = /*#__PURE__*/_interopDefault(gsap2);
+
+var useIsomorphicLayoutEffect = typeof document !== "undefined" ? react.useLayoutEffect : react.useEffect;
+var isConfig = (value) => value && !Array.isArray(value) && typeof value === "object";
+var emptyArray = [];
+var defaultConfig = {};
+var _gsap = gsap2__default.default;
+var useGSAP = (callback, dependencies = emptyArray) => {
+  let config = defaultConfig;
+  if (isConfig(callback)) {
+    config = callback;
+    callback = null;
+    dependencies = "dependencies" in config ? config.dependencies : emptyArray;
+  } else if (isConfig(dependencies)) {
+    config = dependencies;
+    dependencies = "dependencies" in config ? config.dependencies : emptyArray;
+  }
+  callback && typeof callback !== "function" && console.warn("First parameter must be a function or config object");
+  const { scope, revertOnUpdate } = config, mounted = react.useRef(false), context = react.useRef(_gsap.context(() => {
+  }, scope)), contextSafe = react.useRef((func) => context.current.add(null, func)), deferCleanup = dependencies && dependencies.length && !revertOnUpdate;
+  deferCleanup && useIsomorphicLayoutEffect(() => {
+    mounted.current = true;
+    return () => context.current.revert();
+  }, emptyArray);
+  useIsomorphicLayoutEffect(() => {
+    callback && context.current.add(callback, scope);
+    if (!deferCleanup || !mounted.current) {
+      return () => context.current.revert();
+    }
+  }, dependencies);
+  return { context: context.current, contextSafe: contextSafe.current };
+};
+useGSAP.register = (core) => {
+  _gsap = core;
+};
+useGSAP.headless = true;
 var useIsDarkmode = () => {
   const [isDarkmode, setIsDarkmodeActive] = react.useState(false);
   react.useEffect(() => {
@@ -20,6 +59,7 @@ var useIsDarkmode = () => {
   }, []);
   return { isDarkmode };
 };
+gsap2__default.default.registerPlugin(ScrollTrigger.ScrollTrigger, useGSAP);
 var defaultStyles = {
   height: "var(--react-light-beam-height, 500px)",
   width: "var(--react-light-beam-width, 100vw)",
@@ -49,112 +89,118 @@ var LightBeam = ({
   disableDefaultStyles = false
 }) => {
   const elementRef = react.useRef(null);
-  const inViewProgress = framerMotion.useMotionValue(0);
-  const opacity = framerMotion.useMotionValue(0.839322);
   const { isDarkmode } = useIsDarkmode();
   const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
   react.useEffect(() => {
     onLoaded && onLoaded();
   }, []);
-  react.useEffect(() => {
-    if (typeof window === "undefined") return;
-    let cachedWindowHeight = window.innerHeight;
-    const adjustedFullWidth = 1 - fullWidth;
-    const opacityMin = 0.839322;
-    const opacityRange = 1 - opacityMin;
-    let lastProgress = -1;
-    const handleScroll = () => {
-      if (!elementRef.current) return;
-      const rect = elementRef.current.getBoundingClientRect();
-      const normalizedPosition = Math.max(
-        adjustedFullWidth,
-        Math.min(1, rect.top / cachedWindowHeight)
-      );
-      const progress = invert ? normalizedPosition : 1 - normalizedPosition;
-      if (Math.abs(progress - lastProgress) > 1e-3) {
-        lastProgress = progress;
-        inViewProgress.set(progress);
-        opacity.set(opacityMin + opacityRange * progress);
-      }
-    };
-    const handleResize = () => {
-      cachedWindowHeight = window.innerHeight;
-      handleScroll();
-    };
-    const handleScrollThrottled = throttle(handleScroll);
-    const handleResizeThrottled = throttle(handleResize);
-    const target = scrollElement || document.body || document.documentElement;
-    target.addEventListener("scroll", handleScrollThrottled, { passive: true });
-    window.addEventListener("resize", handleResizeThrottled, { passive: true });
-    handleScroll();
-    return () => {
-      target.removeEventListener("scroll", handleScrollThrottled);
-      window.removeEventListener("resize", handleResizeThrottled);
-    };
-  }, [inViewProgress, opacity, scrollElement, fullWidth, invert]);
-  const backgroundPosition = framerMotion.useTransform(
-    inViewProgress,
-    [0, 1],
-    [
-      `conic-gradient(from 90deg at 90% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 150% no-repeat, conic-gradient(from 270deg at 10% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,
-      `conic-gradient(from 90deg at 0% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 100% no-repeat, conic-gradient(from 270deg at 100% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`
-    ]
+  useGSAP(
+    () => {
+      const element = elementRef.current;
+      if (!element || typeof window === "undefined") return;
+      const adjustedFullWidth = 1 - fullWidth;
+      const opacityMin = 0.839322;
+      const opacityRange = 0.160678;
+      const interpolateBackground = (progress) => {
+        const leftPos = 90 - progress * 90;
+        const rightPos = 10 + progress * 90;
+        const leftSize = 150 - progress * 50;
+        return `conic-gradient(from 90deg at ${leftPos}% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% ${leftSize}% no-repeat, conic-gradient(from 270deg at ${rightPos}% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`;
+      };
+      const interpolateMask = (progress) => {
+        if (!maskLightByProgress) {
+          return `linear-gradient(to bottom, ${chosenColor} 25%, transparent 95%)`;
+        }
+        const stopPoint = 50 + progress * 45;
+        return `linear-gradient(to bottom, ${chosenColor} 0%, transparent ${stopPoint}%)`;
+      };
+      const calculateProgress = (rawProgress) => {
+        const clampedProgress = Math.max(
+          adjustedFullWidth,
+          Math.min(1, rawProgress)
+        );
+        return invert ? clampedProgress : 1 - clampedProgress;
+      };
+      const scroller = scrollElement ? scrollElement : void 0;
+      ScrollTrigger.ScrollTrigger.create({
+        trigger: element,
+        start: "top bottom",
+        // When top of element hits bottom of viewport
+        end: "top top",
+        // When top of element hits top of viewport
+        scroller,
+        scrub: 0.3,
+        // Smooth scrubbing with 300ms lag for butter-smooth feel
+        onUpdate: (self) => {
+          const progress = calculateProgress(self.progress);
+          gsap2__default.default.set(element, {
+            background: interpolateBackground(progress),
+            opacity: opacityMin + opacityRange * progress,
+            maskImage: interpolateMask(progress),
+            webkitMaskImage: interpolateMask(progress)
+          });
+        },
+        onRefresh: (self) => {
+          const progress = calculateProgress(self.progress);
+          gsap2__default.default.set(element, {
+            background: interpolateBackground(progress),
+            opacity: opacityMin + opacityRange * progress,
+            maskImage: interpolateMask(progress),
+            webkitMaskImage: interpolateMask(progress)
+          });
+        }
+      });
+      setTimeout(() => {
+        ScrollTrigger.ScrollTrigger.refresh();
+      }, 100);
+    },
+    {
+      dependencies: [
+        chosenColor,
+        fullWidth,
+        invert,
+        maskLightByProgress,
+        scrollElement
+      ],
+      scope: elementRef
+    }
   );
-  const maskImageOpacity = framerMotion.useTransform(
-    inViewProgress,
-    [0, 1],
-    [
-      `linear-gradient(to bottom, ${chosenColor} 0%, transparent 50%)`,
-      `linear-gradient(to bottom, ${chosenColor} 0%, transparent 95%)`
-    ]
-  );
-  const maskImage = maskLightByProgress ? maskImageOpacity : `linear-gradient(to bottom, ${chosenColor} 25%, transparent 95%)`;
   const combinedClassName = `react-light-beam ${className || ""}`.trim();
   const finalStyles = disableDefaultStyles ? {
-    // No default styles, only motion values and user styles
-    background: backgroundPosition,
-    opacity,
-    maskImage,
-    WebkitMaskImage: maskImage,
+    // No default styles, only user styles
     willChange: "background, opacity",
     contain: "layout style paint",
-    // CSS containment for better performance
     ...style
     // User styles override
   } : {
-    // Merge default styles with motion values
+    // Merge default styles with user styles
     ...defaultStyles,
-    background: backgroundPosition,
-    // MotionValue (overrides default)
-    opacity,
-    // MotionValue (overrides default)
-    maskImage,
-    // MotionValue or string
-    WebkitMaskImage: maskImage,
-    willChange: "background, opacity",
     ...style
     // User styles override everything
   };
-  const motionProps = {
-    style: finalStyles,
-    ref: elementRef,
-    className: combinedClassName,
-    ...id ? { id } : {}
-  };
-  return /* @__PURE__ */ jsxRuntime.jsx(framerMotion.motion.div, { ...motionProps });
-};
-var throttle = (func) => {
-  let ticking = false;
-  return function(...args) {
-    if (!ticking) {
-      ticking = true;
-      func.apply(this, args);
-      requestAnimationFrame(() => {
-        ticking = false;
-      });
+  return /* @__PURE__ */ jsxRuntime.jsx(
+    "div",
+    {
+      ref: elementRef,
+      className: combinedClassName,
+      style: finalStyles,
+      ...id ? { id } : {}
     }
-  };
+  );
 };
+/*! Bundled license information:
+
+@gsap/react/src/index.js:
+  (*!
+   * @gsap/react 2.1.2
+   * https://gsap.com
+   *
+   * Copyright 2008-2025, GreenSock. All rights reserved.
+   * Subject to the terms at https://gsap.com/standard-license or for
+   * Club GSAP members, the agreement issued with that membership.
+   * @author: Jack Doyle, jack@greensock.com
+  *)
+*/
 
 exports.LightBeam = LightBeam;
 //# sourceMappingURL=index.js.map
