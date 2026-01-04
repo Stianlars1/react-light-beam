@@ -1,7 +1,8 @@
 {
   "name": "lightbeam-demo",
-  "version": "0.1.0",
+  "version": "3.0.0",
   "private": true,
+  "homepage": "https://stianlars1.github.io/react-light-beam",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",

@@ -48,7 +48,7 @@
   "bugs": {
     "url": "https://github.com/stianalars1/react-light-beam/issues"
   },
-  "homepage": "https://github.com/stianalars1/react-light-beam#readme",
+  "homepage": "https://stianlars1.github.io/react-light-beam",
   "dependencies": {
     "gsap": "^3.12.5",
     "@gsap/react": "^2.1.2"

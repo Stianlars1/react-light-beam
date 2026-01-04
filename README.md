@@ -409,11 +409,13 @@ type PulseConfig = {
 
 ## 📝 Changelog
 
-### v2.2.0 (2026-01-04)
+### v3.0.0 (2026-01-04)
 - ✨ **NEW:** Added atmospheric effects (dust particles, mist, pulse)
-- 🎯 **IMPROVED:** GSAP now included as dependency (simpler installation)
+- 🚀 **BREAKING:** GSAP now included as dependency (no manual install needed)
 - 📦 **IMPROVED:** One-command installation
+- 🎯 **IMPROVED:** Homepage now points to live demo
 - 🐛 **FIXED:** Removed duplicate dependencies
+- 📚 **IMPROVED:** Complete README rewrite with comprehensive docs
 
 ### v2.1.1 (2026-01-04)
 - ⚡ **PERFORMANCE:** Optimized scroll handler with CSS custom properties

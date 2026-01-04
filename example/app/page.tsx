@@ -275,7 +275,7 @@ function App() {
             </a>
           </p>
           <p className="text-sm">
-            Powered by GSAP • MIT License • v2.0.0
+            Powered by GSAP • MIT License • v3.0.0
           </p>
         </div>
       </footer>
