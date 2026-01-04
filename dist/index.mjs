@@ -22,9 +22,12 @@ var defaultStyles = {
   height: "var(--react-light-beam-height, 500px)",
   width: "var(--react-light-beam-width, 100vw)",
   transition: "var(--react-light-beam-transition, all 0.25s ease)",
-  willChange: "all",
+  willChange: "background, opacity",
+  // Specific properties for better performance
   userSelect: "none",
   pointerEvents: "none",
+  contain: "layout style paint",
+  // CSS containment for better performance
   WebkitTransition: "var(--react-light-beam-transition, all 0.25s ease)",
   WebkitUserSelect: "none",
   MozUserSelect: "none"
@@ -52,27 +55,40 @@ var LightBeam = ({
     onLoaded && onLoaded();
   }, []);
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const handleScroll = () => {
-        if (elementRef.current) {
-          const rect = elementRef.current.getBoundingClientRect();
-          const windowHeight = window.innerHeight;
-          const adjustedFullWidth = 1 - fullWidth;
-          const progress = invert ? 0 + Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight)) : 1 - Math.max(adjustedFullWidth, Math.min(1, rect.top / windowHeight));
-          inViewProgress.set(progress);
-          opacity.set(0.839322 + (1 - 0.839322) * progress);
-        }
-      };
-      const handleScrollThrottled = throttle(handleScroll);
-      const target = scrollElement || document.body || document.documentElement;
-      target.addEventListener("scroll", handleScrollThrottled);
-      window.addEventListener("resize", handleScrollThrottled);
+    if (typeof window === "undefined") return;
+    let cachedWindowHeight = window.innerHeight;
+    const adjustedFullWidth = 1 - fullWidth;
+    const opacityMin = 0.839322;
+    const opacityRange = 1 - opacityMin;
+    let lastProgress = -1;
+    const handleScroll = () => {
+      if (!elementRef.current) return;
+      const rect = elementRef.current.getBoundingClientRect();
+      const normalizedPosition = Math.max(
+        adjustedFullWidth,
+        Math.min(1, rect.top / cachedWindowHeight)
+      );
+      const progress = invert ? normalizedPosition : 1 - normalizedPosition;
+      if (Math.abs(progress - lastProgress) > 1e-3) {
+        lastProgress = progress;
+        inViewProgress.set(progress);
+        opacity.set(opacityMin + opacityRange * progress);
+      }
+    };
+    const handleResize = () => {
+      cachedWindowHeight = window.innerHeight;
       handleScroll();
-      return () => {
-        target.removeEventListener("scroll", handleScrollThrottled);
-        window.removeEventListener("resize", handleScrollThrottled);
-      };
-    }
+    };
+    const handleScrollThrottled = throttle(handleScroll);
+    const handleResizeThrottled = throttle(handleResize);
+    const target = scrollElement || document.body || document.documentElement;
+    target.addEventListener("scroll", handleScrollThrottled, { passive: true });
+    window.addEventListener("resize", handleResizeThrottled, { passive: true });
+    handleScroll();
+    return () => {
+      target.removeEventListener("scroll", handleScrollThrottled);
+      window.removeEventListener("resize", handleResizeThrottled);
+    };
   }, [inViewProgress, opacity, scrollElement, fullWidth, invert]);
   const backgroundPosition = useTransform(
     inViewProgress,
@@ -99,6 +115,8 @@ var LightBeam = ({
     maskImage,
     WebkitMaskImage: maskImage,
     willChange: "background, opacity",
+    contain: "layout style paint",
+    // CSS containment for better performance
     ...style
     // User styles override
   } : {
