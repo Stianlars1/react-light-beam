@@ -1,173 +1,171 @@
 "use client";
-import {motion, useMotionValue, useTransform} from "framer-motion";
-import React, {useEffect, useRef} from "react";
-import {LightBeamProps} from "../types/types";
-import {useIsDarkmode} from "./hooks/useDarkmode";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+import React, { useEffect, useRef } from "react";
+import { LightBeamProps } from "../types/types";
+import { useIsDarkmode } from "./hooks/useDarkmode";
+
+// Register GSAP plugins
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 // Default inline styles using CSS variables for easy customization
 // Users can override via className by setting CSS variables
 const defaultStyles: React.CSSProperties = {
-    height: "var(--react-light-beam-height, 500px)",
-    width: "var(--react-light-beam-width, 100vw)",
-    transition: "var(--react-light-beam-transition, all 0.25s ease)",
-    willChange: "background, opacity", // Specific properties for better performance
-    userSelect: "none",
-    pointerEvents: "none",
-    contain: "layout style paint", // CSS containment for better performance
-    WebkitTransition: "var(--react-light-beam-transition, all 0.25s ease)",
-    WebkitUserSelect: "none",
-    MozUserSelect: "none",
+  height: "var(--react-light-beam-height, 500px)",
+  width: "var(--react-light-beam-width, 100vw)",
+  transition: "var(--react-light-beam-transition, all 0.25s ease)",
+  willChange: "background, opacity", // Specific properties for better performance
+  userSelect: "none",
+  pointerEvents: "none",
+  contain: "layout style paint", // CSS containment for better performance
+  WebkitTransition: "var(--react-light-beam-transition, all 0.25s ease)",
+  WebkitUserSelect: "none",
+  MozUserSelect: "none",
 };
 
 export const LightBeam = ({
-                              className,
-                              style,
-                              colorLightmode = "rgba(0,0,0, 0.5)",
-                              colorDarkmode = "rgba(255, 255, 255, 0.5)",
-                              maskLightByProgress = false,
-                              fullWidth = 1.0, // Default to full width
-                              invert = false,
-                              id = undefined,
-                              onLoaded = undefined,
-                              scrollElement,
-                              disableDefaultStyles = false,
-                          }: LightBeamProps) => {
-    const elementRef = useRef<HTMLDivElement>(null);
-    const inViewProgress = useMotionValue(0);
-    const opacity = useMotionValue(0.839322);
-    const {isDarkmode} = useIsDarkmode();
-    const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
+  className,
+  style,
+  colorLightmode = "rgba(0,0,0, 0.5)",
+  colorDarkmode = "rgba(255, 255, 255, 0.5)",
+  maskLightByProgress = false,
+  fullWidth = 1.0, // Default to full width
+  invert = false,
+  id = undefined,
+  onLoaded = undefined,
+  scrollElement,
+  disableDefaultStyles = false,
+}: LightBeamProps) => {
+  const elementRef = useRef<HTMLDivElement>(null);
+  const { isDarkmode } = useIsDarkmode();
+  const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
 
-    useEffect(() => {
-        onLoaded && onLoaded();
-    }, []);
+  // Call onLoaded callback when component mounts
+  useEffect(() => {
+    onLoaded && onLoaded();
+  }, []);
 
-    useEffect(() => {
-        if (typeof window === "undefined") return
+  // GSAP ScrollTrigger implementation
+  useGSAP(
+    () => {
+      const element = elementRef.current;
+      if (!element || typeof window === "undefined") return;
 
-        // Cache values that don't change during scroll (MAJOR OPTIMIZATION)
-        let cachedWindowHeight = window.innerHeight;
-        const adjustedFullWidth = 1 - fullWidth; // Only calculate once
-        const opacityMin = 0.839322;
-        const opacityRange = 1 - opacityMin; // Pre-calculate: 0.160678
-        let lastProgress = -1;
+      // Pre-calculate constants for performance
+      const adjustedFullWidth = 1 - fullWidth;
+      const opacityMin = 0.839322;
+      const opacityRange = 0.160678; // 1 - 0.839322
 
-        const handleScroll = () => {
-            if (!elementRef.current) return;
+      // Helper function to interpolate background gradient
+      const interpolateBackground = (progress: number): string => {
+        // At progress 0: gradients are wide (90% and 10% positions)
+        // At progress 1: gradients converge (0% and 100% positions)
+        const leftPos = 90 - progress * 90; // 90% → 0%
+        const rightPos = 10 + progress * 90; // 10% → 100%
+        const leftSize = 150 - progress * 50; // 150% → 100%
 
-            // OPTIMIZATION: Only call getBoundingClientRect (expensive!)
-            const rect = elementRef.current.getBoundingClientRect();
+        return `conic-gradient(from 90deg at ${leftPos}% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% ${leftSize}% no-repeat, conic-gradient(from 270deg at ${rightPos}% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`;
+      };
 
-            // Calculate normalized position (0-1 range)
-            const normalizedPosition = Math.max(
-                adjustedFullWidth,
-                Math.min(1, rect.top / cachedWindowHeight)
-            );
-
-            // Calculate progress (only once, not twice like before!)
-            const progress = invert ? normalizedPosition : 1 - normalizedPosition;
-
-            // Only update if change is significant (avoid micro-updates)
-            if (Math.abs(progress - lastProgress) > 0.001) {
-                lastProgress = progress;
-                // Batch updates together
-                inViewProgress.set(progress);
-                opacity.set(opacityMin + opacityRange * progress);
-            }
-        };
-
-        const handleResize = () => {
-            cachedWindowHeight = window.innerHeight; // Update cache on resize
-            handleScroll(); // Recalculate immediately
-        };
-
-        const handleScrollThrottled = throttle(handleScroll);
-        const handleResizeThrottled = throttle(handleResize);
-
-        // Default to document.body (works in modern React/Next.js setups)
-        const target = scrollElement || document.body || document.documentElement;
-
-        // Passive listeners improve scroll performance significantly
-        target.addEventListener("scroll", handleScrollThrottled, {passive: true});
-        window.addEventListener("resize", handleResizeThrottled, {passive: true});
-
-        // Initial call to set state
-        handleScroll();
-
-        return () => {
-            target.removeEventListener("scroll", handleScrollThrottled);
-            window.removeEventListener("resize", handleResizeThrottled);
-        };
-    }, [inViewProgress, opacity, scrollElement, fullWidth, invert]);
-
-    const backgroundPosition = useTransform(
-        inViewProgress,
-        [0, 1],
-        [
-            `conic-gradient(from 90deg at 90% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 150% no-repeat, conic-gradient(from 270deg at 10% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,
-            `conic-gradient(from 90deg at 0% 0%, ${chosenColor}, transparent 180deg) 0% 0% / 50% 100% no-repeat, conic-gradient(from 270deg at 100% 0%, transparent 180deg, ${chosenColor}) 100% 0% / 50% 100% no-repeat`,
-        ]
-    );
-    const maskImageOpacity = useTransform(
-        inViewProgress,
-        [0, 1],
-        [
-            `linear-gradient(to bottom, ${chosenColor} 0%, transparent 50%)`,
-            `linear-gradient(to bottom, ${chosenColor} 0%, transparent 95%)`,
-        ]
-    );
-
-    const maskImage = maskLightByProgress
-        ? maskImageOpacity
-        : `linear-gradient(to bottom, ${chosenColor} 25%, transparent 95%)`;
-
-    const combinedClassName = `react-light-beam ${className || ""}`.trim();
-
-    // CRITICAL: MotionValues must be passed directly to motion.div style prop
-    // Don't spread them into plain objects or reactivity breaks!
-    const finalStyles = disableDefaultStyles
-        ? {
-            // No default styles, only motion values and user styles
-            background: backgroundPosition,
-            opacity: opacity,
-            maskImage: maskImage,
-            WebkitMaskImage: maskImage,
-            willChange: "background, opacity",
-            contain: "layout style paint", // CSS containment for better performance
-            ...style, // User styles override
+      // Helper function to interpolate mask
+      const interpolateMask = (progress: number): string => {
+        if (!maskLightByProgress) {
+          return `linear-gradient(to bottom, ${chosenColor} 25%, transparent 95%)`;
         }
-        : {
-            // Merge default styles with motion values
-            ...defaultStyles,
-            background: backgroundPosition, // MotionValue (overrides default)
-            opacity: opacity,                // MotionValue (overrides default)
-            maskImage: maskImage,            // MotionValue or string
-            WebkitMaskImage: maskImage,
-            willChange: "background, opacity",
-            ...style, // User styles override everything
-        };
+        const stopPoint = 50 + progress * 45; // 50% → 95%
+        return `linear-gradient(to bottom, ${chosenColor} 0%, transparent ${stopPoint}%)`;
+      };
 
-    const motionProps: any = {
-        style: finalStyles,
-        ref: elementRef,
-        className: combinedClassName,
-        ...(id ? {id} : {}),
-    };
+      // Helper function to calculate progress from raw ScrollTrigger progress
+      const calculateProgress = (rawProgress: number): number => {
+        // ScrollTrigger gives us 0-1 based on start/end
+        // We need to apply fullWidth and invert logic
+        const clampedProgress = Math.max(
+          adjustedFullWidth,
+          Math.min(1, rawProgress)
+        );
+        return invert ? clampedProgress : 1 - clampedProgress;
+      };
 
-    return <motion.div {...motionProps} />;
-};
+      // Determine scroll container
+      // ScrollTrigger expects undefined (default), window, or a DOM element
+      // If scrollElement is provided, cast it as Element (GSAP accepts Element or Window)
+      const scroller = scrollElement
+        ? (scrollElement as Element | Window)
+        : undefined;
 
-// Leading-edge RAF throttle: runs immediately, then throttles subsequent calls
-// This prevents the "lag behind scroll" feeling
-const throttle = (func: Function) => {
-    let ticking = false;
-    return function (this: any, ...args: any[]) {
-        if (!ticking) {
-            ticking = true;
-            func.apply(this, args); // Run IMMEDIATELY (leading edge)
-            requestAnimationFrame(() => {
-                ticking = false; // Allow next call on next frame
-            });
-        }
-    };
+      // Create ScrollTrigger
+      ScrollTrigger.create({
+        trigger: element,
+        start: "top bottom", // When top of element hits bottom of viewport
+        end: "top top", // When top of element hits top of viewport
+        scroller: scroller,
+        scrub: 0.3, // Smooth scrubbing with 300ms lag for butter-smooth feel
+        onUpdate: (self) => {
+          // Calculate progress with our custom logic
+          const progress = calculateProgress(self.progress);
+
+          // Update element styles directly (bypasses React for performance)
+          gsap.set(element, {
+            background: interpolateBackground(progress),
+            opacity: opacityMin + opacityRange * progress,
+            maskImage: interpolateMask(progress),
+            webkitMaskImage: interpolateMask(progress),
+          });
+        },
+        onRefresh: (self) => {
+          // Set initial state when ScrollTrigger refreshes
+          const progress = calculateProgress(self.progress);
+          gsap.set(element, {
+            background: interpolateBackground(progress),
+            opacity: opacityMin + opacityRange * progress,
+            maskImage: interpolateMask(progress),
+            webkitMaskImage: interpolateMask(progress),
+          });
+        },
+      });
+
+      // Refresh ScrollTrigger after a brief delay to ensure layout is settled
+      // This is especially important for Next.js SSR/hydration
+      setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 100);
+    },
+    {
+      dependencies: [
+        chosenColor,
+        fullWidth,
+        invert,
+        maskLightByProgress,
+        scrollElement,
+      ],
+      scope: elementRef,
+    }
+  );
+
+  const combinedClassName = `react-light-beam ${className || ""}`.trim();
+
+  // Prepare final styles (same logic as before, just without MotionValues)
+  const finalStyles = disableDefaultStyles
+    ? {
+        // No default styles, only user styles
+        willChange: "background, opacity",
+        contain: "layout style paint",
+        ...style, // User styles override
+      }
+    : {
+        // Merge default styles with user styles
+        ...defaultStyles,
+        ...style, // User styles override everything
+      };
+
+  return (
+    <div
+      ref={elementRef}
+      className={combinedClassName}
+      style={finalStyles}
+      {...(id ? { id } : {})}
+    />
+  );
 };
