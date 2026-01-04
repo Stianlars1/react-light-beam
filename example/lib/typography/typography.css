@@ -1,0 +1,134 @@
+/*────────────────────────────────────────────
+  Project: LightBeam
+  Generated: 2026-01-04T18:49:52.799Z
+  Viewport: 360px → 1440px
+  Responsive:
+    profile         : product
+    mobile ratio    : 1.12
+    desktop ratio   : 1.25
+    optimize mobile : yes
+    H1 cap (mobile) : 55px
+────────────────────────────────────────────*/
+/* Mobile-first responsive typography system using CSS clamp() */
+:root {
+  --font-sans: 'geistSans', 'geistSans Fallback';
+  --lh-root: 1.25;
+
+  --size-display: clamp(1.974rem, 0.089rem + 8.379vw, 7.629rem);
+  --size-headline: clamp(1.762rem, 0.315rem + 6.431vw, 6.104rem);
+  --size-title: clamp(1.574rem, 0.47rem + 4.903vw, 4.883rem);
+  --size-body: clamp(1rem, 0.667rem + 1.481vw, 2rem);
+  --size-label: clamp(.75rem, 0.5rem + 1.044vw, 1.25rem);
+}
+
+/* Baseline styles */
+html {
+  font-family: var(--font-sans);
+  line-height: var(--lh-root);
+}
+
+/* Modern typography improvements */
+:where(h1, h2, h3, h4, h5, h6) {
+  text-wrap: balance;
+  line-height: 1.2;
+}
+
+:where(p, li) {
+  text-wrap: pretty;
+  max-width: 65ch;
+}
+
+a {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  text-decoration-skip-ink: auto;
+}
+
+/* Semantic element mapping */
+h1 {
+  font-size: var(--size-display);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: var(--size-headline);
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: var(--size-title);
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+h4, h5, h6 {
+  font-size: var(--size-title);
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+p {
+  font-size: var(--size-body);
+  line-height: 1.6;
+}
+
+small {
+  font-size: var(--size-label);
+  line-height: 1.4;
+}
+
+/* Typography utilities */
+.t-display {
+  font-size: var(--size-display);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.t-headline {
+  font-size: var(--size-headline);
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.t-title {
+  font-size: var(--size-title);
+  line-height: 1.25;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.t-body {
+  font-size: var(--size-body);
+  line-height: 1.6;
+  max-width: 65ch;
+  text-wrap: pretty;
+}
+
+.t-label {
+  font-size: var(--size-label);
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  :where(h1, h2, h3, h4, h5, h6) {
+    text-wrap: balance;
+    hyphens: auto;
+  }
+  
+  :where(p, li) {
+    max-width: none;
+    text-wrap: pretty;
+  }
+}

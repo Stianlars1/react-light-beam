@@ -1,0 +1,147 @@
+.heroHeader {
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+
+    .title {
+        background: linear-gradient(to bottom right, hsl(var(--accent-12)) 0%, hsl(var(--accent-10)) 125%);
+        color: transparent;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.2;
+        margin: 0;
+        padding: 0;
+    }
+
+    .subTitle {
+        color: hsl(var(--primary-foreground));
+        line-height: 1;
+    }
+}
+
+.ctaGroup {
+    margin-top: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+
+    button, a {
+        transition: background, color, background-color, transform, border, 0.247s ease;
+        border-radius: 6px;
+    }
+}
+
+.primaryCTA {
+    background: hsl(var(--primary));
+    border: 1px solid hsl(var(--primary-foreground) / 0.75);
+    color: hsl(var(--primary-foreground));
+
+    &:hover, &:focus, &:active {
+        border-color: hsl(var(--primary-foreground));
+        transform: scale(1.05);
+        color: hsl(var(--gray-12))
+    }
+}
+
+.secondaryCTA {
+    background: transparent;
+    border: 1px solid hsl(var(--accent-foreground) / 0.45);
+    color: hsl(var(--accent-foreground));
+
+    &:hover, &:focus, &:active {
+        background: hsl(var(--accent-foreground) / 0.2);
+        border-color: hsl(var(--accent-foreground));
+    }
+}
+
+.codeWrapper {
+}
+
+.code {
+}
+
+.controllerWrapper {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: linear-gradient(to top left, hsl(var(--accent-1)) 0%, hsl(var(--background)) 100%);
+
+    padding: 1.5rem;
+    border-radius: 8px;
+    isolation: isolate;
+    z-index: 50000;
+
+    border: 1px solid hsl(var(--gray-5));
+    max-width: 24rem;
+
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: 2rem;
+
+    .controllerHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .controllerTitle {
+            font-size: var(--size-body);
+        }
+
+        .controllerCloseButton {
+        }
+    }
+
+
+    .controllerSection {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+
+        .sectionHeading {
+            font-size: 1.5rem;
+        }
+
+        .optionWidthWrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+
+
+            .rangeInput {
+                font-size: 0.875rem;
+            }
+
+
+            .rangeInputDescription {
+                font-size: 0.875rem;
+                color: hsl(var(--gray-11))
+            }
+
+        }
+
+        .labelInputWrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+
+        }
+            .controllerLabel {
+                font-size:1rem;
+            }
+
+            .input {
+            }
+
+    }
+
+
+    .optionWidthWrapper {
+    }
+
+
+}

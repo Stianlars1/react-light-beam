@@ -230,7 +230,7 @@ export const LightBeam = ({
                 start: scrollStart, // When to start the animation
                 end: scrollEnd, // When to end the animation
                 scroller: scroller,
-                scrub: 0.3, // Fast catch-up (300ms) for responsive scroll without jitter
+                scrub: 0.15, // Fast catch-up (300ms) for responsive scroll without jitter
                 onUpdate: (self) => {
                     // Calculate progress using Framer Motion logic
                     const progress = calculateProgress(self.progress);
