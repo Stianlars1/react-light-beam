@@ -145,11 +145,11 @@ var throttle = (func) => {
   let ticking = false;
   return function(...args) {
     if (!ticking) {
+      ticking = true;
+      func.apply(this, args);
       requestAnimationFrame(() => {
-        func.apply(this, args);
         ticking = false;
       });
-      ticking = true;
     }
   };
 };

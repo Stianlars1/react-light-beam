@@ -157,15 +157,17 @@ export const LightBeam = ({
     return <motion.div {...motionProps} />;
 };
 
+// Leading-edge RAF throttle: runs immediately, then throttles subsequent calls
+// This prevents the "lag behind scroll" feeling
 const throttle = (func: Function) => {
     let ticking = false;
     return function (this: any, ...args: any[]) {
         if (!ticking) {
-            requestAnimationFrame(() => {
-                func.apply(this, args);
-                ticking = false;
-            });
             ticking = true;
+            func.apply(this, args); // Run IMMEDIATELY (leading edge)
+            requestAnimationFrame(() => {
+                ticking = false; // Allow next call on next frame
+            });
         }
     };
 };
