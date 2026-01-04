@@ -114,19 +114,20 @@ var LightBeam = ({
         return `linear-gradient(to bottom, ${chosenColor} 0%, transparent ${stopPoint}%)`;
       };
       const calculateProgress = (rawProgress) => {
-        return (invert ? 1 - rawProgress : rawProgress) * fullWidth;
+        const clamped = Math.max(0, Math.min(1, rawProgress));
+        return (invert ? 1 - clamped : clamped) * fullWidth;
       };
       const scroller = scrollElement ? scrollElement : void 0;
       const endPosition = `top ${(1 - fullWidth) * 100}%`;
-      ScrollTrigger.ScrollTrigger.create({
+      const st = ScrollTrigger.ScrollTrigger.create({
         trigger: element,
         start: "top bottom",
         // Start when element enters viewport from bottom
         end: endPosition,
         // End position based on fullWidth prop
         scroller,
-        scrub: 0.3,
-        // Smooth scrubbing with 300ms lag for butter-smooth feel
+        scrub: true,
+        // TRUE for instant scrubbing (no lag) - smoother bidirectional
         onUpdate: (self) => {
           const progress = calculateProgress(self.progress);
           gsap2__default.default.set(element, {
@@ -145,6 +146,13 @@ var LightBeam = ({
             webkitMaskImage: interpolateMask(progress)
           });
         }
+      });
+      const initialProgress = calculateProgress(st.progress);
+      gsap2__default.default.set(element, {
+        background: interpolateBackground(initialProgress),
+        opacity: opacityMin + opacityRange * initialProgress,
+        maskImage: interpolateMask(initialProgress),
+        webkitMaskImage: interpolateMask(initialProgress)
       });
       setTimeout(() => {
         ScrollTrigger.ScrollTrigger.refresh();

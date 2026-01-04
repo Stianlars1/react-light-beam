@@ -79,6 +79,9 @@ export const LightBeam = ({
             // Helper function to calculate progress from raw ScrollTrigger progress
             const calculateProgress = (rawProgress: number): number => {
                 // ScrollTrigger gives us 0-1 as element moves from start to end
+                // Clamp to ensure it's always between 0 and 1
+                const clamped = Math.max(0, Math.min(1, rawProgress));
+
                 // Scale by fullWidth to control maximum beam width
                 // fullWidth=1.0 → progress goes 0 to 1 (fully wide)
                 // fullWidth=0.5 → progress goes 0 to 0.5 (50% wide max)
@@ -86,7 +89,7 @@ export const LightBeam = ({
 
                 // Default (invert=false): 0→fullWidth = small to wide
                 // Inverted (invert=true): fullWidth→0 = wide to small
-                return (invert ? 1 - rawProgress : rawProgress) * fullWidth;
+                return (invert ? 1 - clamped : clamped) * fullWidth;
             };
 
             // Determine scroll container
@@ -103,12 +106,12 @@ export const LightBeam = ({
             const endPosition = `top ${(1 - fullWidth) * 100}%`;
 
             // Create ScrollTrigger
-            ScrollTrigger.create({
+            const st = ScrollTrigger.create({
                 trigger: element,
                 start: "top bottom", // Start when element enters viewport from bottom
                 end: endPosition, // End position based on fullWidth prop
                 scroller: scroller,
-                scrub: 0.3, // Smooth scrubbing with 300ms lag for butter-smooth feel
+                scrub: true, // TRUE for instant scrubbing (no lag) - smoother bidirectional
                 onUpdate: (self) => {
                     // Calculate progress with our custom logic
                     const progress = calculateProgress(self.progress);
@@ -131,6 +134,15 @@ export const LightBeam = ({
                         webkitMaskImage: interpolateMask(progress),
                     });
                 },
+            });
+
+            // Set initial state immediately
+            const initialProgress = calculateProgress(st.progress);
+            gsap.set(element, {
+                background: interpolateBackground(initialProgress),
+                opacity: opacityMin + opacityRange * initialProgress,
+                maskImage: interpolateMask(initialProgress),
+                webkitMaskImage: interpolateMask(initialProgress),
             });
 
             // Refresh ScrollTrigger after a brief delay to ensure layout is settled
