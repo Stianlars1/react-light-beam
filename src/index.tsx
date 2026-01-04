@@ -5,6 +5,9 @@ import {useGSAP} from "@gsap/react";
 import React, {useEffect, useRef} from "react";
 import {LightBeamProps} from "../types/types";
 import {useIsDarkmode} from "./hooks/useDarkmode";
+import {DustParticles} from "./effects/DustParticles";
+import {MistEffect} from "./effects/MistEffect";
+import {PulseEffect} from "./effects/PulseEffect";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -39,6 +42,9 @@ export const LightBeam = ({
                               onLoaded = undefined,
                               scrollElement,
                               disableDefaultStyles = false,
+                              dustParticles = {enabled: false},
+                              mist = {enabled: false},
+                              pulse = {enabled: false},
                           }: LightBeamProps) => {
     const elementRef = useRef<HTMLDivElement>(null);
     const {isDarkmode} = useIsDarkmode();
@@ -168,14 +174,28 @@ export const LightBeam = ({
                     // OPTIMIZED: Only update numeric CSS variables, not full gradient strings
                     updateGradientVars(progress);
                     updateMaskVars(progress);
-                    element.style.opacity = String(opacityMin + opacityRange * progress);
+
+                    // Set base opacity as CSS variable so pulse can multiply it
+                    const baseOpacity = opacityMin + opacityRange * progress;
+                    element.style.setProperty('--base-opacity', String(baseOpacity));
+
+                    // If pulse is not enabled, set opacity directly
+                    if (!pulse.enabled) {
+                        element.style.opacity = String(baseOpacity);
+                    }
                 },
                 onRefresh: (self) => {
                     // Set initial state when ScrollTrigger refreshes
                     const progress = calculateProgress(self.progress);
                     updateGradientVars(progress);
                     updateMaskVars(progress);
-                    element.style.opacity = String(opacityMin + opacityRange * progress);
+
+                    const baseOpacity = opacityMin + opacityRange * progress;
+                    element.style.setProperty('--base-opacity', String(baseOpacity));
+
+                    if (!pulse.enabled) {
+                        element.style.opacity = String(baseOpacity);
+                    }
                 },
             });
 
@@ -183,7 +203,13 @@ export const LightBeam = ({
             const initialProgress = calculateProgress(st.progress);
             updateGradientVars(initialProgress);
             updateMaskVars(initialProgress);
-            element.style.opacity = String(opacityMin + opacityRange * initialProgress);
+
+            const initialBaseOpacity = opacityMin + opacityRange * initialProgress;
+            element.style.setProperty('--base-opacity', String(initialBaseOpacity));
+
+            if (!pulse.enabled) {
+                element.style.opacity = String(initialBaseOpacity);
+            }
 
             // Refresh ScrollTrigger after a brief delay to ensure layout is settled
             // This is especially important for Next.js SSR/hydration
@@ -212,7 +238,7 @@ export const LightBeam = ({
 
     const combinedClassName = `react-light-beam ${className || ""}`.trim();
 
-    // Prepare final styles (same logic as before, just without MotionValues)
+    // Prepare final styles
     const finalStyles = disableDefaultStyles
         ? {
             // No default styles, only user styles
@@ -232,7 +258,18 @@ export const LightBeam = ({
             className={combinedClassName}
             style={finalStyles}
             {...(id ? {id} : {})}
-        />
+        >
+            {/* Atmospheric Effects */}
+            {dustParticles.enabled && (
+                <DustParticles config={dustParticles} beamColor={chosenColor} />
+            )}
+            {mist.enabled && (
+                <MistEffect config={mist} beamColor={chosenColor} />
+            )}
+            {pulse.enabled && (
+                <PulseEffect config={pulse} containerRef={elementRef} />
+            )}
+        </div>
     );
 };
 

@@ -1,14 +1,14 @@
 "use client";
-import gsap from 'gsap';
+import gsap4 from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useRef, useLayoutEffect, useEffect, useState } from 'react';
-import { jsx } from 'react/jsx-runtime';
+import { useRef, useLayoutEffect, useEffect, useState, useMemo } from 'react';
+import { jsxs, jsx, Fragment } from 'react/jsx-runtime';
 
 var useIsomorphicLayoutEffect = typeof document !== "undefined" ? useLayoutEffect : useEffect;
 var isConfig = (value) => value && !Array.isArray(value) && typeof value === "object";
 var emptyArray = [];
 var defaultConfig = {};
-var _gsap = gsap;
+var _gsap = gsap4;
 var useGSAP = (callback, dependencies = emptyArray) => {
   let config = defaultConfig;
   if (isConfig(callback)) {
@@ -53,7 +53,222 @@ var useIsDarkmode = () => {
   }, []);
   return { isDarkmode };
 };
-gsap.registerPlugin(ScrollTrigger, useGSAP);
+var DustParticles = ({ config, beamColor }) => {
+  const {
+    enabled = false,
+    count = 30,
+    speed = 1,
+    sizeRange = [1, 3],
+    opacityRange = [0.2, 0.6],
+    color
+  } = config;
+  const particles = useMemo(() => {
+    if (!enabled) return [];
+    return Array.from({ length: count }, (_, i) => {
+      const x = Math.random() * 100;
+      const y = Math.random() * 100;
+      const size = sizeRange[0] + Math.random() * (sizeRange[1] - sizeRange[0]);
+      const opacity = opacityRange[0] + Math.random() * (opacityRange[1] - opacityRange[0]);
+      const duration = (3 + Math.random() * 4) / speed;
+      const delay = Math.random() * duration;
+      return {
+        id: `dust-${i}`,
+        x,
+        y,
+        size,
+        opacity,
+        duration,
+        delay
+      };
+    });
+  }, [enabled, count, sizeRange, opacityRange, speed]);
+  useGSAP(
+    () => {
+      if (!enabled || particles.length === 0) return;
+      const timelines = [];
+      particles.forEach((particle) => {
+        const element = document.getElementById(particle.id);
+        if (!element) return;
+        const tl = gsap4.timeline({
+          repeat: -1,
+          yoyo: true,
+          delay: particle.delay
+        });
+        tl.to(element, {
+          y: `-=${20 + Math.random() * 30}`,
+          // Float upward 20-50px
+          x: `+=${Math.random() * 20 - 10}`,
+          // Slight horizontal drift ±10px
+          opacity: particle.opacity * 0.5,
+          // Fade slightly
+          duration: particle.duration,
+          ease: "sine.inOut"
+        });
+        timelines.push(tl);
+      });
+      return () => {
+        timelines.forEach((tl) => tl.kill());
+      };
+    },
+    {
+      dependencies: [particles, enabled]
+    }
+  );
+  if (!enabled) return null;
+  const particleColor = color || beamColor;
+  return /* @__PURE__ */ jsx(Fragment, { children: particles.map((particle) => /* @__PURE__ */ jsx(
+    "div",
+    {
+      id: particle.id,
+      style: {
+        position: "absolute",
+        left: `${particle.x}%`,
+        top: `${particle.y}%`,
+        width: `${particle.size}px`,
+        height: `${particle.size}px`,
+        borderRadius: "50%",
+        backgroundColor: particleColor,
+        opacity: particle.opacity,
+        pointerEvents: "none",
+        willChange: "transform, opacity"
+      }
+    },
+    particle.id
+  )) });
+};
+var MistEffect = ({ config, beamColor }) => {
+  const {
+    enabled = false,
+    intensity = 0.3,
+    speed = 1,
+    layers = 2
+  } = config;
+  const mistLayers = useMemo(() => {
+    if (!enabled) return [];
+    return Array.from({ length: layers }, (_, i) => {
+      const layerOpacity = intensity * 0.6 / (i + 1);
+      const duration = (8 + i * 3) / speed;
+      const delay = i * 1.5 / speed;
+      const scale = 1 + i * 0.2;
+      return {
+        id: `mist-layer-${i}`,
+        opacity: layerOpacity,
+        duration,
+        delay,
+        scale
+      };
+    });
+  }, [enabled, intensity, speed, layers]);
+  useGSAP(
+    () => {
+      if (!enabled || mistLayers.length === 0) return;
+      const timelines = [];
+      mistLayers.forEach((layer) => {
+        const element = document.getElementById(layer.id);
+        if (!element) return;
+        const tl = gsap4.timeline({
+          repeat: -1,
+          yoyo: false
+        });
+        tl.fromTo(
+          element,
+          {
+            x: "-100%",
+            opacity: 0
+          },
+          {
+            x: "100%",
+            opacity: layer.opacity,
+            duration: layer.duration,
+            ease: "none",
+            delay: layer.delay
+          }
+        ).to(element, {
+          opacity: 0,
+          duration: layer.duration * 0.2,
+          ease: "power1.in"
+        });
+        timelines.push(tl);
+      });
+      return () => {
+        timelines.forEach((tl) => tl.kill());
+      };
+    },
+    {
+      dependencies: [mistLayers, enabled]
+    }
+  );
+  if (!enabled) return null;
+  const mistColor = beamColor.replace(/[\d.]+\)$/g, `${intensity})`);
+  return /* @__PURE__ */ jsx(Fragment, { children: mistLayers.map((layer) => /* @__PURE__ */ jsx(
+    "div",
+    {
+      id: layer.id,
+      style: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        background: `radial-gradient(ellipse 120% 80% at 50% 20%, ${mistColor}, transparent 70%)`,
+        opacity: 0,
+        pointerEvents: "none",
+        willChange: "transform, opacity",
+        transform: `scale(${layer.scale})`,
+        filter: "blur(40px)"
+      }
+    },
+    layer.id
+  )) });
+};
+var PulseEffect = ({ config, containerRef }) => {
+  const {
+    enabled = false,
+    duration = 2,
+    intensity = 0.2,
+    easing = "sine.inOut"
+  } = config;
+  useGSAP(
+    () => {
+      if (!enabled || !containerRef.current) return;
+      const element = containerRef.current;
+      const timeline = gsap4.timeline({
+        repeat: -1,
+        // Infinite loop
+        yoyo: true
+        // Reverse on each iteration
+      });
+      const maxMultiplier = Math.min(2, 1 + intensity);
+      timeline.fromTo(
+        element,
+        {
+          "--pulse-multiplier": 1
+        },
+        {
+          "--pulse-multiplier": maxMultiplier,
+          duration,
+          ease: easing
+        }
+      );
+      const updateOpacity = () => {
+        const baseOpacity = getComputedStyle(element).getPropertyValue("--base-opacity") || "1";
+        const pulseMultiplier = getComputedStyle(element).getPropertyValue("--pulse-multiplier") || "1";
+        element.style.opacity = `calc(${baseOpacity} * ${pulseMultiplier})`;
+      };
+      const ticker = gsap4.ticker.add(updateOpacity);
+      return () => {
+        timeline.kill();
+        gsap4.ticker.remove(ticker);
+      };
+    },
+    {
+      dependencies: [enabled, duration, intensity, easing],
+      scope: containerRef
+    }
+  );
+  return null;
+};
+gsap4.registerPlugin(ScrollTrigger, useGSAP);
 var defaultStyles = {
   height: "var(--react-light-beam-height, 500px)",
   width: "var(--react-light-beam-width, 100vw)",
@@ -83,7 +298,10 @@ var LightBeam = ({
   id = void 0,
   onLoaded = void 0,
   scrollElement,
-  disableDefaultStyles = false
+  disableDefaultStyles = false,
+  dustParticles = { enabled: false },
+  mist = { enabled: false },
+  pulse = { enabled: false }
 }) => {
   const elementRef = useRef(null);
   const { isDarkmode } = useIsDarkmode();
@@ -162,19 +380,31 @@ var LightBeam = ({
           const progress = calculateProgress(self.progress);
           updateGradientVars(progress);
           updateMaskVars(progress);
-          element.style.opacity = String(opacityMin + opacityRange * progress);
+          const baseOpacity = opacityMin + opacityRange * progress;
+          element.style.setProperty("--base-opacity", String(baseOpacity));
+          if (!pulse.enabled) {
+            element.style.opacity = String(baseOpacity);
+          }
         },
         onRefresh: (self) => {
           const progress = calculateProgress(self.progress);
           updateGradientVars(progress);
           updateMaskVars(progress);
-          element.style.opacity = String(opacityMin + opacityRange * progress);
+          const baseOpacity = opacityMin + opacityRange * progress;
+          element.style.setProperty("--base-opacity", String(baseOpacity));
+          if (!pulse.enabled) {
+            element.style.opacity = String(baseOpacity);
+          }
         }
       });
       const initialProgress = calculateProgress(st.progress);
       updateGradientVars(initialProgress);
       updateMaskVars(initialProgress);
-      element.style.opacity = String(opacityMin + opacityRange * initialProgress);
+      const initialBaseOpacity = opacityMin + opacityRange * initialProgress;
+      element.style.setProperty("--base-opacity", String(initialBaseOpacity));
+      if (!pulse.enabled) {
+        element.style.opacity = String(initialBaseOpacity);
+      }
       const refreshTimeout = setTimeout(() => {
         ScrollTrigger.refresh();
       }, 100);
@@ -210,13 +440,18 @@ var LightBeam = ({
     ...style
     // User styles override everything
   };
-  return /* @__PURE__ */ jsx(
+  return /* @__PURE__ */ jsxs(
     "div",
     {
       ref: elementRef,
       className: combinedClassName,
       style: finalStyles,
-      ...id ? { id } : {}
+      ...id ? { id } : {},
+      children: [
+        dustParticles.enabled && /* @__PURE__ */ jsx(DustParticles, { config: dustParticles, beamColor: chosenColor }),
+        mist.enabled && /* @__PURE__ */ jsx(MistEffect, { config: mist, beamColor: chosenColor }),
+        pulse.enabled && /* @__PURE__ */ jsx(PulseEffect, { config: pulse, containerRef: elementRef })
+      ]
     }
   );
 };

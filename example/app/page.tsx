@@ -9,6 +9,11 @@ export default function Home() {
   const [maskByProgress, setMaskByProgress] = useState(false);
   const [showControls, setShowControls] = useState(true);
 
+  // Atmospheric Effects
+  const [dustEnabled, setDustEnabled] = useState(false);
+  const [mistEnabled, setMistEnabled] = useState(false);
+  const [pulseEnabled, setPulseEnabled] = useState(false);
+
   return (
     <main className="relative min-h-[300vh]">
       {/* Hero Section with LightBeam */}
@@ -30,6 +35,9 @@ export default function Home() {
           maskLightByProgress={maskByProgress}
           onLoaded={() => console.log("✅ LightBeam loaded!")}
           className={"max-h:[500px] absolute top:[-100px] inset:[0]"}
+          dustParticles={{enabled: dustEnabled, count: 50, speed: 1.2}}
+          mist={{enabled: mistEnabled, intensity: 0.4, layers: 3}}
+          pulse={{enabled: pulseEnabled, duration: 2.5, intensity: 0.3}}
         />
 
         <div className="relative z-10 text-center px-6 max-w-4xl">
@@ -118,6 +126,42 @@ export default function Home() {
                 onChange={(e) => setMaskByProgress(e.target.checked)}
                 className="w-4 h-4 accent-white"
               />
+            </div>
+          </div>
+
+          {/* Atmospheric Effects Section */}
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <h4 className="text-sm font-semibold text-gray-300 mb-3">Atmospheric Effects ✨</h4>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm text-gray-400">Dust Particles</label>
+                <input
+                  type="checkbox"
+                  checked={dustEnabled}
+                  onChange={(e) => setDustEnabled(e.target.checked)}
+                  className="w-4 h-4 accent-white"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <label className="text-sm text-gray-400">Mist Effect</label>
+                <input
+                  type="checkbox"
+                  checked={mistEnabled}
+                  onChange={(e) => setMistEnabled(e.target.checked)}
+                  className="w-4 h-4 accent-white"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <label className="text-sm text-gray-400">Pulse Effect</label>
+                <input
+                  type="checkbox"
+                  checked={pulseEnabled}
+                  onChange={(e) => setPulseEnabled(e.target.checked)}
+                  className="w-4 h-4 accent-white"
+                />
+              </div>
             </div>
           </div>
 
