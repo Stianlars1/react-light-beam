@@ -220,6 +220,11 @@ export const LightBeam = ({
             initGradientStructure(colorRef.current);
 
             // Create ScrollTrigger with customizable start/end positions
+            // SCRUB VALUE EXPLANATION:
+            // - scrub: true (or 1) = 1 second catch-up delay (causes visible lag and stuttering)
+            // - scrub: 0.3 = 300ms catch-up (fast and smooth, optimal for UI) ← CURRENT SETTING
+            // - scrub: 0 = instant (may feel jittery on fast scrolls, no smoothing)
+            // Research: Lower values (0.2-0.5) recommended for responsive scroll UX
             const st = ScrollTrigger.create({
                 trigger: element,
                 start: scrollStart, // When to start the animation
