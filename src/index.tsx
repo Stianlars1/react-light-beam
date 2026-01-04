@@ -272,16 +272,3 @@ export const LightBeam = ({
         </div>
     );
 };
-
-
-
-//   <div class="react-light-beam max-h:[500px] absolute top:[-100px] inset:[0]" style="height: var(--react-light-beam-height, 500px); width: var(--react-light-beam-width, 100vw); will-change: background,
-//   opacity; pointer-events: none; contain: layout style paint; transition: var(--react-light-beam-transition, all 0.25s ease); mask-image: linear-gradient(rgba(255, 255, 255, 0.8) 25%, transparent 95%);
-//   opacity: 0.9434; background: conic-gradient(from 90deg at 31.723% 0%, rgba(255, 255, 255, 0.8), transparent 180deg) 0% 0% / 50% 117.624% no-repeat, conic-gradient(from 270deg at 68.277% 0%, transparent
-//   180deg, rgba(255, 255, 255, 0.8)) 100% 0% / 50% 100% no-repeat;"></div>
-
-//   <div class="react-light-beam max-h:[500px] absolute top:[-100px] inset:[0]" style="height: var(--react-light-beam-height, 500px); width: var(--react-light-beam-width, 100vw); will-change: background,
-//   opacity; pointer-events: none; contain: layout style paint; transition: var(--react-light-beam-transition, all 0.25s ease); mask-image: linear-gradient(rgba(0, 0, 0, 0.2) 25%, transparent 95%); opacity:
-//   0.941; background: conic-gradient(from 90deg at 33.0405% 0%, rgba(0, 0, 0, 0.2), transparent 180deg) 0% 0% / 50% 118.356% no-repeat, conic-gradient(from 270deg at 66.9595% 0%, transparent 180deg, rgba(0, 0,
-//   0, 0.2)) 100% 0% / 50% 100% no-repeat;"></div>
-

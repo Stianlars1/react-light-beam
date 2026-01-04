@@ -1,7 +1,6 @@
 "use client";
 import gsap from "gsap";
 import {useGSAP} from "@gsap/react";
-import {useRef} from "react";
 import {PulseConfig} from "../../types/types";
 
 interface PulseEffectProps {
