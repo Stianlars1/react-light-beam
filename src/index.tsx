@@ -114,20 +114,7 @@ export const LightBeam = ({
 
                 // Apply invert logic (EXACTLY like Framer Motion)
                 // Use invertRef to get current value without closure issues
-                const finalProgress = invertRef.current ? normalizedPosition : 1 - normalizedPosition;
-
-                // DEBUG: Log to see what's happening
-                if (invertRef.current) {
-                    console.log('[INVERT=TRUE]', {
-                        rawProgress,
-                        normalizedPosition,
-                        finalProgress,
-                        scrollDirection: rawProgress > (window as any).lastRawProgress ? 'DOWN' : 'UP'
-                    });
-                    (window as any).lastRawProgress = rawProgress;
-                }
-
-                return finalProgress;
+                return invertRef.current ? normalizedPosition : 1 - normalizedPosition;
             };
 
             // Determine scroll container

@@ -126,17 +126,7 @@ var LightBeam = ({
           Math.min(1, 1 - rawProgress)
           // Convert GSAP progress to Framer's normalized position
         );
-        const finalProgress = invertRef.current ? normalizedPosition : 1 - normalizedPosition;
-        if (invertRef.current) {
-          console.log("[INVERT=TRUE]", {
-            rawProgress,
-            normalizedPosition,
-            finalProgress,
-            scrollDirection: rawProgress > window.lastRawProgress ? "DOWN" : "UP"
-          });
-          window.lastRawProgress = rawProgress;
-        }
-        return finalProgress;
+        return invertRef.current ? normalizedPosition : 1 - normalizedPosition;
       };
       const scroller = scrollElement ? scrollElement : void 0;
       const st = ScrollTrigger.create({
