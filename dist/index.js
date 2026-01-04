@@ -21,18 +21,19 @@ var useIsDarkmode = () => {
   return { isDarkmode };
 };
 var defaultStyles = {
-  height: "500px",
-  width: "100vw",
-  transition: "all 0.25s ease",
+  height: "var(--react-light-beam-height, 500px)",
+  width: "var(--react-light-beam-width, 100vw)",
+  transition: "var(--react-light-beam-transition, all 0.25s ease)",
   willChange: "all",
   userSelect: "none",
   pointerEvents: "none",
-  WebkitTransition: "all 0.25s ease",
+  WebkitTransition: "var(--react-light-beam-transition, all 0.25s ease)",
   WebkitUserSelect: "none",
   MozUserSelect: "none"
 };
 var LightBeam = ({
   className,
+  style,
   colorLightmode = "rgba(0,0,0, 0.5)",
   colorDarkmode = "rgba(255, 255, 255, 0.5)",
   maskLightByProgress = false,
@@ -93,19 +94,22 @@ var LightBeam = ({
   );
   const maskImage = maskLightByProgress ? maskImageOpacity : `linear-gradient(to bottom, ${chosenColor} 25%, transparent 95%)`;
   const combinedClassName = `react-light-beam ${className || ""}`.trim();
-  const mergedStyles = disableDefaultStyles ? {
+  const motionStyles = {
     background: backgroundPosition,
     opacity,
     maskImage,
     WebkitMaskImage: maskImage,
     willChange: "background, opacity"
+  };
+  const mergedStyles = disableDefaultStyles ? {
+    ...motionStyles,
+    ...style
+    // User styles override motion styles
   } : {
     ...defaultStyles,
-    background: backgroundPosition,
-    opacity,
-    maskImage,
-    WebkitMaskImage: maskImage,
-    willChange: "background, opacity"
+    ...motionStyles,
+    ...style
+    // User styles override everything
   };
   const motionProps = {
     style: mergedStyles,

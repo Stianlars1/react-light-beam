@@ -4,21 +4,23 @@ import React, { useEffect, useRef } from "react";
 import { LightBeamProps } from "../types/types";
 import { useIsDarkmode } from "./hooks/useDarkmode";
 
-// Default inline styles (can be disabled via prop)
+// Default inline styles using CSS variables for easy customization
+// Users can override via className by setting CSS variables
 const defaultStyles: React.CSSProperties = {
-  height: "500px",
-  width: "100vw",
-  transition: "all 0.25s ease",
+  height: "var(--react-light-beam-height, 500px)",
+  width: "var(--react-light-beam-width, 100vw)",
+  transition: "var(--react-light-beam-transition, all 0.25s ease)",
   willChange: "all",
   userSelect: "none",
   pointerEvents: "none",
-  WebkitTransition: "all 0.25s ease",
+  WebkitTransition: "var(--react-light-beam-transition, all 0.25s ease)",
   WebkitUserSelect: "none",
   MozUserSelect: "none",
 };
 
 export const LightBeam = ({
   className,
+  style,
   colorLightmode = "rgba(0,0,0, 0.5)",
   colorDarkmode = "rgba(255, 255, 255, 0.5)",
   maskLightByProgress = false,
@@ -102,22 +104,28 @@ export const LightBeam = ({
 
   const combinedClassName = `react-light-beam ${className || ""}`.trim();
 
-  // Merge default styles with motion styles
+  // Motion-specific styles (always applied)
+  const motionStyles = {
+    background: backgroundPosition,
+    opacity: opacity,
+    maskImage: maskImage,
+    WebkitMaskImage: maskImage,
+    willChange: "background, opacity",
+  };
+
+  // Merge styles in order of priority:
+  // 1. Default styles (lowest)
+  // 2. Motion styles (middle)
+  // 3. User's style prop (highest - overrides everything)
   const mergedStyles = disableDefaultStyles
     ? {
-        background: backgroundPosition,
-        opacity: opacity,
-        maskImage: maskImage,
-        WebkitMaskImage: maskImage,
-        willChange: "background, opacity",
+        ...motionStyles,
+        ...style, // User styles override motion styles
       }
     : {
         ...defaultStyles,
-        background: backgroundPosition,
-        opacity: opacity,
-        maskImage: maskImage,
-        WebkitMaskImage: maskImage,
-        willChange: "background, opacity",
+        ...motionStyles,
+        ...style, // User styles override everything
       };
 
   const motionProps: any = {

@@ -28,9 +28,9 @@ yarn add @stianlarsen/react-light-beam
 
 ## Usage
 
-### Basic Usage (Recommended - No CSS Import Needed!)
+### Basic Usage (Works Immediately - No CSS Import!)
 
-The component works out of the box with inline styles:
+The component works out of the box with default inline styles:
 
 ```jsx
 import { LightBeam } from "@stianlarsen/react-light-beam";
@@ -49,13 +49,58 @@ const App = () => {
     </div>
   );
 };
-
-export default App;
 ```
 
-### Advanced Usage (Custom CSS)
+### Customizing Styles (Multiple Options!)
 
-If you want to use custom CSS instead of inline styles:
+#### Option 1: CSS Variables via className (Recommended!)
+
+Override default styles using CSS variables - works with className!
+
+```jsx
+import { LightBeam } from "@stianlarsen/react-light-beam";
+
+const App = () => {
+  return (
+    <LightBeam
+      className="custom-beam"
+      colorDarkmode="rgba(255, 255, 255, 0.8)"
+    />
+  );
+};
+```
+
+Then in your CSS:
+
+```css
+.custom-beam {
+  --react-light-beam-height: 800px;
+  --react-light-beam-width: 80vw;
+  --react-light-beam-transition: all 0.5s ease-in-out;
+}
+```
+
+**Available CSS Variables:**
+- `--react-light-beam-height` (default: `500px`)
+- `--react-light-beam-width` (default: `100vw`)
+- `--react-light-beam-transition` (default: `all 0.25s ease`)
+
+#### Option 2: Inline Styles via `style` prop
+
+```jsx
+<LightBeam
+  style={{
+    height: '800px',
+    width: '80vw',
+    marginTop: '-200px'
+  }}
+  colorDarkmode="rgba(255, 255, 255, 0.8)"
+/>
+```
+
+### Advanced: Full CSS Control
+
+For complete CSS control using className only:
 
 ```jsx
 import { LightBeam } from "@stianlarsen/react-light-beam";
@@ -72,13 +117,14 @@ const App = () => {
 };
 ```
 
-Then provide your own CSS:
+Then style with CSS:
 
 ```css
 .my-custom-lightbeam {
-  height: 800px; /* Custom height */
+  height: 800px;
   width: 100%;
-  /* Add your custom styles */
+  position: absolute;
+  /* Full control via CSS */
 }
 ```
 
@@ -88,6 +134,7 @@ Then provide your own CSS:
 | --------------------- | ---------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `id`                  | `string`                     | `undefined`                | Optional string representing a unique ID for the LightBeam container.                                                                                                                                                                                                                                                                        |
 | `className`           | `string`                     | `undefined`                | Optional string representing custom classes to be added to the LightBeam container.                                                                                                                                                                                                                                                          |
+| `style`               | `React.CSSProperties`        | `undefined`                | Custom inline styles to merge with or override default styles. User styles take priority. Example: `style={{ height: '800px', width: '80vw' }}`                                                                                                                                                                                              |
 | `colorLightmode`      | `string`                     | `rgba(0,0,0, 0.5)`         | Optional string representing the color of the light beam in light mode.                                                                                                                                                                                                                                                                      |
 | `colorDarkmode`       | `string`                     | `rgba(255, 255, 255, 0.5)` | Optional string representing the color of the light beam in dark mode.                                                                                                                                                                                                                                                                       |
 | `fullWidth`           | `number`                     | `1.0`                      | Optional number between `0` and `1` representing the maximum width the light beam can reach.                                                                                                                                                                                                                                                 |
@@ -99,20 +146,24 @@ Then provide your own CSS:
 
 ### Default Configuration
 
-The component includes **inline styles by default** (no CSS import needed!):
+The component includes **inline styles with CSS variables** (no CSS import needed, easy to customize!):
 
 ```javascript
 {
-  height: "500px",
-  width: "100vw",
-  transition: "all 0.25s ease",
+  height: "var(--react-light-beam-height, 500px)",
+  width: "var(--react-light-beam-width, 100vw)",
+  transition: "var(--react-light-beam-transition, all 0.25s ease)",
   willChange: "all",
   userSelect: "none",
   pointerEvents: "none"
 }
 ```
 
-These inline styles ensure the component works immediately out of the box. If you prefer to use custom CSS, set `disableDefaultStyles={true}` and import the base CSS file.
+**Benefits:**
+- ✅ Works immediately out of the box
+- ✅ Easy to customize via className (just set CSS variables!)
+- ✅ No CSS import required for basic usage
+- ✅ Inline styles use CSS variables, so className overrides work perfectly
 
 ### Recommended Usage
 
