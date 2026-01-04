@@ -101,6 +101,20 @@ type LightBeamProps = {
   disableDefaultStyles?: boolean;
 
   /**
+   * GSAP ScrollTrigger start position
+   * @default "top bottom"
+   * @example "top center", "center bottom", "top 80%"
+   */
+  scrollStart?: string;
+
+  /**
+   * GSAP ScrollTrigger end position
+   * @default "top top"
+   * @example "top 20%", "center center", "bottom top"
+   */
+  scrollEnd?: string;
+
+  /**
    * Dust particles configuration
    * @example dustParticles={{ enabled: true, count: 50, speed: 1.5 }}
    */
@@ -119,6 +133,6 @@ type LightBeamProps = {
   pulse?: PulseConfig;
 };
 
-declare const LightBeam: ({ className, style, colorLightmode, colorDarkmode, maskLightByProgress, fullWidth, invert, id, onLoaded, scrollElement, disableDefaultStyles, dustParticles, mist, pulse, }: LightBeamProps) => react_jsx_runtime.JSX.Element;
+declare const LightBeam: ({ className, style, colorLightmode, colorDarkmode, maskLightByProgress, fullWidth, invert, id, onLoaded, scrollElement, disableDefaultStyles, scrollStart, scrollEnd, dustParticles, mist, pulse, }: LightBeamProps) => react_jsx_runtime.JSX.Element;
 
 export { LightBeam };

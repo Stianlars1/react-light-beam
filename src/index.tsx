@@ -36,12 +36,14 @@ export const LightBeam = ({
                               colorLightmode = "rgba(0,0,0, 0.5)",
                               colorDarkmode = "rgba(255, 255, 255, 0.5)",
                               maskLightByProgress = false,
-                              fullWidth = 1.0, // Default to full width
+                              fullWidth = 1.0, // Default to full width range
                               invert = false,
                               id = undefined,
                               onLoaded = undefined,
                               scrollElement,
                               disableDefaultStyles = false,
+                              scrollStart = "top bottom",
+                              scrollEnd = "top top",
                               dustParticles = {enabled: false},
                               mist = {enabled: false},
                               pulse = {enabled: false},
@@ -128,23 +130,26 @@ export const LightBeam = ({
                 }
             };
 
-            // EXACT MATCH TO FRAMER MOTION LOGIC:
-            // fullWidth controls the MINIMUM beam width, not maximum!
-            // fullWidth=1.0 → beam goes from 0% to 100% wide (full range)
-            // fullWidth=0.5 → beam goes from 50% to 100% wide (narrower minimum)
-            // fullWidth=0.2 → beam goes from 80% to 100% wide (very narrow minimum)
+            // FRAMER MOTION LOGIC (PRESERVED):
+            // fullWidth controls the MAXIMUM beam width expansion during scroll
+            // fullWidth=1.0 → beam expands from 0% to 100% of maximum width (full range)
+            // fullWidth=0.8 → beam expands from 0% to 80% of maximum width
+            // fullWidth=0.5 → beam expands from 0% to 50% of maximum width
+            // fullWidth=0.2 → beam expands from 0% to 20% of maximum width
             const adjustedFullWidth = 1 - fullWidth;
 
             // Helper function to calculate progress (EXACTLY like Framer Motion)
             const calculateProgress = (rawProgress: number): number => {
-                // ScrollTrigger rawProgress is 0-1 as element moves from start to end
-                // We need to convert this to match Framer's rect.top / windowHeight logic
-                // CRITICAL: GSAP progress (0→1) is INVERSE of Framer's normalizedPosition (1→0)
+                // ScrollTrigger rawProgress: 0 (element entering) → 1 (element at trigger end)
+                // We convert to match Framer's rect.top / windowHeight logic
+                // GSAP progress (0→1) is INVERSE of Framer's normalizedPosition (1→0)
 
-                // Apply fullWidth floor (minimum progress value)
+                // Apply fullWidth ceiling (maximum progress value)
+                // Math.max ensures progress never goes below (1 - fullWidth)
+                // This limits how much the beam can expand
                 const normalizedPosition = Math.max(
-                    adjustedFullWidth,  // Minimum (floor)
-                    Math.min(1, 1 - rawProgress)  // Convert GSAP progress to Framer's normalized position
+                    adjustedFullWidth,  // Floor value (1 - fullWidth)
+                    Math.min(1, 1 - rawProgress)  // Inverted GSAP progress
                 );
 
                 // Apply invert logic (EXACTLY like Framer Motion)
@@ -160,13 +165,13 @@ export const LightBeam = ({
             // Initialize gradient structure once
             initGradientStructure(colorRef.current);
 
-            // Create ScrollTrigger with FIXED range (like Framer Motion)
+            // Create ScrollTrigger with customizable start/end positions
             const st = ScrollTrigger.create({
                 trigger: element,
-                start: "top bottom", // Element top hits viewport bottom
-                end: "top top", // Element top hits viewport top
+                start: scrollStart, // When to start the animation
+                end: scrollEnd, // When to end the animation
                 scroller: scroller,
-                scrub: true, // Instant scrubbing
+                scrub: true, // Instant scrubbing for smooth 60fps
                 onUpdate: (self) => {
                     // Calculate progress using Framer Motion logic
                     const progress = calculateProgress(self.progress);
@@ -185,7 +190,9 @@ export const LightBeam = ({
                     }
                 },
                 onRefresh: (self) => {
-                    // Set initial state when ScrollTrigger refreshes
+                    // CRITICAL: ScrollTrigger.refresh() is called on window resize, orientation change,
+                    // or when content changes. We need to recalculate and reapply styles to ensure
+                    // the beam renders correctly after layout changes.
                     const progress = calculateProgress(self.progress);
                     updateGradientVars(progress);
                     updateMaskVars(progress);
@@ -229,8 +236,10 @@ export const LightBeam = ({
             // This prevents visual glitches when these values change mid-scroll
             // Only include values that affect ScrollTrigger's position/range calculations
             dependencies: [
-                fullWidth,  // Affects trigger range
+                fullWidth,  // Affects progress range calculation
                 scrollElement,  // Affects which element to watch
+                scrollStart,  // Affects when animation starts
+                scrollEnd,  // Affects when animation ends
             ],
             scope: elementRef,
         }

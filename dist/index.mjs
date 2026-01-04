@@ -260,12 +260,14 @@ var LightBeam = ({
   colorDarkmode = "rgba(255, 255, 255, 0.5)",
   maskLightByProgress = false,
   fullWidth = 1,
-  // Default to full width
+  // Default to full width range
   invert = false,
   id = void 0,
   onLoaded = void 0,
   scrollElement,
   disableDefaultStyles = false,
+  scrollStart = "top bottom",
+  scrollEnd = "top top",
   dustParticles = { enabled: false },
   mist = { enabled: false },
   pulse = { enabled: false }
@@ -326,9 +328,9 @@ var LightBeam = ({
       const calculateProgress = (rawProgress) => {
         const normalizedPosition = Math.max(
           adjustedFullWidth,
-          // Minimum (floor)
+          // Floor value (1 - fullWidth)
           Math.min(1, 1 - rawProgress)
-          // Convert GSAP progress to Framer's normalized position
+          // Inverted GSAP progress
         );
         return invertRef.current ? normalizedPosition : 1 - normalizedPosition;
       };
@@ -336,13 +338,13 @@ var LightBeam = ({
       initGradientStructure(colorRef.current);
       const st = ScrollTrigger.create({
         trigger: element,
-        start: "top bottom",
-        // Element top hits viewport bottom
-        end: "top top",
-        // Element top hits viewport top
+        start: scrollStart,
+        // When to start the animation
+        end: scrollEnd,
+        // When to end the animation
         scroller,
         scrub: true,
-        // Instant scrubbing
+        // Instant scrubbing for smooth 60fps
         onUpdate: (self) => {
           const progress = calculateProgress(self.progress);
           updateGradientVars(progress);
@@ -387,9 +389,13 @@ var LightBeam = ({
       // Only include values that affect ScrollTrigger's position/range calculations
       dependencies: [
         fullWidth,
-        // Affects trigger range
-        scrollElement
+        // Affects progress range calculation
+        scrollElement,
         // Affects which element to watch
+        scrollStart,
+        // Affects when animation starts
+        scrollEnd
+        // Affects when animation ends
       ],
       scope: elementRef
     }

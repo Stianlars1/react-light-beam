@@ -99,6 +99,20 @@ export type LightBeamProps = {
   disableDefaultStyles?: boolean;
 
   /**
+   * GSAP ScrollTrigger start position
+   * @default "top bottom"
+   * @example "top center", "center bottom", "top 80%"
+   */
+  scrollStart?: string;
+
+  /**
+   * GSAP ScrollTrigger end position
+   * @default "top top"
+   * @example "top 20%", "center center", "bottom top"
+   */
+  scrollEnd?: string;
+
+  /**
    * Dust particles configuration
    * @example dustParticles={{ enabled: true, count: 50, speed: 1.5 }}
    */
