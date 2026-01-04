@@ -41,6 +41,14 @@ export const LightBeam = ({
     const {isDarkmode} = useIsDarkmode();
     const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
 
+    // Use a ref to track the current color without triggering useGSAP re-runs
+    const colorRef = useRef(chosenColor);
+
+    // Update the ref whenever color changes (dark mode toggle or prop changes)
+    useEffect(() => {
+        colorRef.current = chosenColor;
+    }, [chosenColor, colorLightmode, colorDarkmode]);
+
     // Call onLoaded callback when component mounts
     useEffect(() => {
         onLoaded && onLoaded();
@@ -89,11 +97,12 @@ export const LightBeam = ({
             const calculateProgress = (rawProgress: number): number => {
                 // ScrollTrigger rawProgress is 0-1 as element moves from start to end
                 // We need to convert this to match Framer's rect.top / windowHeight logic
+                // CRITICAL: GSAP progress (0→1) is INVERSE of Framer's normalizedPosition (1→0)
 
                 // Apply fullWidth floor (minimum progress value)
                 const normalizedPosition = Math.max(
                     adjustedFullWidth,  // Minimum (floor)
-                    Math.min(1, rawProgress)  // Maximum (ceiling at 1)
+                    Math.min(1, 1 - rawProgress)  // Convert GSAP progress to Framer's normalized position
                 );
 
                 // Apply invert logic (EXACTLY like Framer Motion)
@@ -118,20 +127,20 @@ export const LightBeam = ({
 
                     // Update styles
                     gsap.set(element, {
-                        background: interpolateBackground(progress, chosenColor),
+                        background: interpolateBackground(progress, colorRef.current),
                         opacity: opacityMin + opacityRange * progress,
-                        maskImage: interpolateMask(progress, chosenColor),
-                        webkitMaskImage: interpolateMask(progress, chosenColor),
+                        maskImage: interpolateMask(progress, colorRef.current),
+                        webkitMaskImage: interpolateMask(progress, colorRef.current),
                     });
                 },
                 onRefresh: (self) => {
                     // Set initial state when ScrollTrigger refreshes
                     const progress = calculateProgress(self.progress);
                     gsap.set(element, {
-                        background: interpolateBackground(progress, chosenColor),
+                        background: interpolateBackground(progress, colorRef.current),
                         opacity: opacityMin + opacityRange * progress,
-                        maskImage: interpolateMask(progress, chosenColor),
-                        webkitMaskImage: interpolateMask(progress, chosenColor),
+                        maskImage: interpolateMask(progress, colorRef.current),
+                        webkitMaskImage: interpolateMask(progress, colorRef.current),
                     });
                 },
             });
@@ -139,22 +148,29 @@ export const LightBeam = ({
             // Set initial state immediately
             const initialProgress = calculateProgress(st.progress);
             gsap.set(element, {
-                background: interpolateBackground(initialProgress, chosenColor),
+                background: interpolateBackground(initialProgress, colorRef.current),
                 opacity: opacityMin + opacityRange * initialProgress,
-                maskImage: interpolateMask(initialProgress, chosenColor),
-                webkitMaskImage: interpolateMask(initialProgress, chosenColor),
+                maskImage: interpolateMask(initialProgress, colorRef.current),
+                webkitMaskImage: interpolateMask(initialProgress, colorRef.current),
             });
 
             // Refresh ScrollTrigger after a brief delay to ensure layout is settled
             // This is especially important for Next.js SSR/hydration
-            setTimeout(() => {
+            const refreshTimeout = setTimeout(() => {
                 ScrollTrigger.refresh();
             }, 100);
+
+            // Cleanup function to kill ScrollTrigger and clear timeout
+            return () => {
+                st.kill();
+                clearTimeout(refreshTimeout);
+            };
         },
         {
-            
+            // CRITICAL: Don't include chosenColor in dependencies!
+            // We use colorRef.current to get the latest color without recreating ScrollTrigger
+            // This prevents the beam from disappearing when color changes (dark mode toggle)
             dependencies: [
-                chosenColor,
                 fullWidth,
                 invert,
                 maskLightByProgress,
@@ -189,3 +205,16 @@ export const LightBeam = ({
         />
     );
 };
+
+
+
+//   <div class="react-light-beam max-h:[500px] absolute top:[-100px] inset:[0]" style="height: var(--react-light-beam-height, 500px); width: var(--react-light-beam-width, 100vw); will-change: background,
+//   opacity; pointer-events: none; contain: layout style paint; transition: var(--react-light-beam-transition, all 0.25s ease); mask-image: linear-gradient(rgba(255, 255, 255, 0.8) 25%, transparent 95%);
+//   opacity: 0.9434; background: conic-gradient(from 90deg at 31.723% 0%, rgba(255, 255, 255, 0.8), transparent 180deg) 0% 0% / 50% 117.624% no-repeat, conic-gradient(from 270deg at 68.277% 0%, transparent
+//   180deg, rgba(255, 255, 255, 0.8)) 100% 0% / 50% 100% no-repeat;"></div>
+
+//   <div class="react-light-beam max-h:[500px] absolute top:[-100px] inset:[0]" style="height: var(--react-light-beam-height, 500px); width: var(--react-light-beam-width, 100vw); will-change: background,
+//   opacity; pointer-events: none; contain: layout style paint; transition: var(--react-light-beam-transition, all 0.25s ease); mask-image: linear-gradient(rgba(0, 0, 0, 0.2) 25%, transparent 95%); opacity:
+//   0.941; background: conic-gradient(from 90deg at 33.0405% 0%, rgba(0, 0, 0, 0.2), transparent 180deg) 0% 0% / 50% 118.356% no-repeat, conic-gradient(from 270deg at 66.9595% 0%, transparent 180deg, rgba(0, 0,
+//   0, 0.2)) 100% 0% / 50% 100% no-repeat;"></div>
+

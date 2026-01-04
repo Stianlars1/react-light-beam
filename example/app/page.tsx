@@ -1,7 +1,7 @@
 "use client";
 
-import {LightBeam} from "@stianlarsen/react-light-beam";
 import {useState} from "react";
+import {LightBeam} from "../../dist";
 
 export default function Home() {
   const [fullWidth, setFullWidth] = useState(1.0);

@@ -91,6 +91,10 @@ var LightBeam = ({
   const elementRef = react.useRef(null);
   const { isDarkmode } = useIsDarkmode();
   const chosenColor = isDarkmode ? colorDarkmode : colorLightmode;
+  const colorRef = react.useRef(chosenColor);
+  react.useEffect(() => {
+    colorRef.current = chosenColor;
+  }, [chosenColor, colorLightmode, colorDarkmode]);
   react.useEffect(() => {
     onLoaded && onLoaded();
   }, []);
@@ -118,8 +122,8 @@ var LightBeam = ({
         const normalizedPosition = Math.max(
           adjustedFullWidth,
           // Minimum (floor)
-          Math.min(1, rawProgress)
-          // Maximum (ceiling at 1)
+          Math.min(1, 1 - rawProgress)
+          // Convert GSAP progress to Framer's normalized position
         );
         return invert ? normalizedPosition : 1 - normalizedPosition;
       };
@@ -136,36 +140,42 @@ var LightBeam = ({
         onUpdate: (self) => {
           const progress = calculateProgress(self.progress);
           gsap2__default.default.set(element, {
-            background: interpolateBackground(progress, chosenColor),
+            background: interpolateBackground(progress, colorRef.current),
             opacity: opacityMin + opacityRange * progress,
-            maskImage: interpolateMask(progress, chosenColor),
-            webkitMaskImage: interpolateMask(progress, chosenColor)
+            maskImage: interpolateMask(progress, colorRef.current),
+            webkitMaskImage: interpolateMask(progress, colorRef.current)
           });
         },
         onRefresh: (self) => {
           const progress = calculateProgress(self.progress);
           gsap2__default.default.set(element, {
-            background: interpolateBackground(progress, chosenColor),
+            background: interpolateBackground(progress, colorRef.current),
             opacity: opacityMin + opacityRange * progress,
-            maskImage: interpolateMask(progress, chosenColor),
-            webkitMaskImage: interpolateMask(progress, chosenColor)
+            maskImage: interpolateMask(progress, colorRef.current),
+            webkitMaskImage: interpolateMask(progress, colorRef.current)
           });
         }
       });
       const initialProgress = calculateProgress(st.progress);
       gsap2__default.default.set(element, {
-        background: interpolateBackground(initialProgress, chosenColor),
+        background: interpolateBackground(initialProgress, colorRef.current),
         opacity: opacityMin + opacityRange * initialProgress,
-        maskImage: interpolateMask(initialProgress, chosenColor),
-        webkitMaskImage: interpolateMask(initialProgress, chosenColor)
+        maskImage: interpolateMask(initialProgress, colorRef.current),
+        webkitMaskImage: interpolateMask(initialProgress, colorRef.current)
       });
-      setTimeout(() => {
+      const refreshTimeout = setTimeout(() => {
         ScrollTrigger.ScrollTrigger.refresh();
       }, 100);
+      return () => {
+        st.kill();
+        clearTimeout(refreshTimeout);
+      };
     },
     {
+      // CRITICAL: Don't include chosenColor in dependencies!
+      // We use colorRef.current to get the latest color without recreating ScrollTrigger
+      // This prevents the beam from disappearing when color changes (dark mode toggle)
       dependencies: [
-        chosenColor,
         fullWidth,
         invert,
         maskLightByProgress,
