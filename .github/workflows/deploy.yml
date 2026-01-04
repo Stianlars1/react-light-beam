@@ -12,7 +12,22 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: cd example && npm install && npm run build
+
+      # Build the package first (creates dist/ folder)
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Build package
+        run: npm run build
+
+      # Now build the example (which imports from ../../dist)
+      - name: Install example dependencies
+        run: cd example && npm install
+
+      - name: Build example
+        run: cd example && npm run build
+
+      # Deploy to GitHub Pages
       - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
