@@ -9,6 +9,8 @@
 node_modules/
 *.log
 *.tsbuildinfo
+.DS_Store
+**/.DS_Store
 
 # configuration files
 # tsconfig.json
